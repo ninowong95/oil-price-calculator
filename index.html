@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>香港三類油站折扣即時比價</title>
+  <title>香港油價折扣計算器</title>
   
-  <!-- iOS PWA 設定 -->
+  <!-- iOS PWA 支援 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="油價比價">
+  <meta name="apple-mobile-web-app-title" content="油價計算器">
   
   <style>
     :root {
@@ -20,15 +20,15 @@
 
     body {
       margin: 0;
-      padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
       background-color: var(--bg);
-      color: #1c1c1e;
+      color: #000;
     }
 
     .header {
       text-align: center;
-      padding: 10px 0;
+      padding: 12px 0;
     }
 
     .header h1 {
@@ -36,250 +36,273 @@
       margin: 0;
     }
 
-    .input-card {
+    .card {
       background: var(--card-bg);
       border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .card h2 {
+      font-size: 15px;
+      margin: 0 0 10px 0;
+      color: var(--primary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    .row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
     }
 
-    .input-card label {
-      font-size: 15px;
-      font-weight: 600;
+    .row label {
+      flex: 1;
+      color: #3a3a3c;
     }
 
-    .input-card input {
-      width: 100px;
-      padding: 6px 10px;
-      font-size: 16px;
+    .row input, .row select {
+      width: 130px;
+      padding: 6px 8px;
+      font-size: 14px;
       border: 1px solid var(--border);
       border-radius: 8px;
       text-align: right;
       background: #f9f9f9;
     }
 
-    .brand-card {
-      background: var(--card-bg);
+    .result-card {
+      background: #1c1c1e;
+      color: #fff;
       border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      padding: 16px;
+      margin-bottom: 16px;
     }
 
-    .brand-header {
+    .result-card h2 {
+      color: #5ea9ff;
+      border-bottom: 1px solid #38383a;
+      margin-top: 0;
+    }
+
+    .res-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 8px;
       margin-bottom: 8px;
+      font-size: 14px;
     }
 
-    .brand-title {
+    .res-row.highlight {
       font-size: 17px;
       font-weight: bold;
-    }
-
-    .brand-esso { color: #e60012; }
-    .brand-shell { color: #ffd600; text-shadow: 0 0 1px #000; }
-    .brand-caltex { color: #00838f; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    th, td {
-      padding: 6px 4px;
-      text-align: center;
-    }
-
-    th {
-      color: #8e8e93;
-      font-weight: normal;
-      border-bottom: 1px solid var(--border);
-    }
-
-    td.day {
-      font-weight: 600;
-      text-align: left;
-      width: 25%;
-    }
-
-    td.promo {
-      font-size: 11px;
-      color: #666;
-      text-align: left;
-      width: 35%;
-    }
-
-    td.price {
-      font-weight: bold;
       color: #30d158;
-      width: 20%;
+      border-top: 1px dashed #38383a;
+      padding-top: 8px;
+      margin-top: 8px;
     }
 
-    td.disc {
-      color: #ff9500;
-      width: 20%;
+    .res-row.sub-highlight {
+      font-size: 15px;
+      font-weight: bold;
+      color: #ffd60a;
     }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1>⛽ 3大油站每日價錢比價</h1>
+    <h1>⛽ 油價折扣計算器 (Oil Calculator)</h1>
   </div>
 
-  <div class="input-card">
-    <label for="spending">目標入油金額 ($)</label>
-    <input type="number" id="spending" value="500" step="50" oninput="calculateAll()">
-  </div>
-
-  <!-- Esso -->
-  <div class="brand-card">
-    <div class="brand-header">
-      <span class="brand-title brand-esso">🔴 Esso 埃索</span>
-      <span style="font-size: 12px; color: #666;">基準特級: $30.09 / 普通: $28.29</span>
+  <!-- 計算結果展示區域 -->
+  <div class="result-card">
+    <h2>📊 計算結果</h2>
+    <div class="res-row">
+      <span>實質入油量 (Total Volume):</span>
+      <span id="res-vol">0.00 L</span>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th style="text-align: left;">星期/活動</th>
-          <th style="text-align: left;">優惠方案</th>
-          <th>折後每升</th>
-          <th>每升總減</th>
-        </tr>
-      </thead>
-      <tbody id="esso-table"></tbody>
-    </table>
+    <div class="res-row">
+      <span>(付費: <span id="res-vol-paid">0.00</span>L / 贈送: <span id="res-vol-gift">0.00</span>L)</span>
+    </div>
+    <div class="res-row highlight">
+      <span>優惠後每升牌價:</span>
+      <span id="res-price-l">$0.00 / L</span>
+    </div>
+    <div class="res-row">
+      <span>每升折扣金額:</span>
+      <span id="res-disc-l">$0.00 / L</span>
+    </div>
+    <div class="res-row sub-highlight">
+      <span>扣除積分後每升淨價:</span>
+      <span id="res-price-pts">$0.00 / L</span>
+    </div>
+    <div class="res-row">
+      <span>扣除積分後總每升折扣:</span>
+      <span id="res-disc-pts">$0.00 / L</span>
+    </div>
+    <div class="res-row" style="margin-top: 8px; border-top: 1px solid #38383a; padding-top: 8px;">
+      <span>賺取積分 (Points Earned):</span>
+      <span id="res-pts-earned" style="color: #64d2ff;">0 pts</span>
+    </div>
   </div>
 
-  <!-- Shell -->
-  <div class="brand-card">
-    <div class="brand-header">
-      <span class="brand-title brand-shell">🟡 Shell 港燈/殼牌</span>
-      <span style="font-size: 12px; color: #666;">基準特級: $30.09 / 普通: $28.29</span>
+  <!-- 油站與油價設定 -->
+  <div class="card">
+    <h2>1. 油站與油價設定</h2>
+    <div class="row">
+      <label>油站品牌</label>
+      <select id="brand" onchange="updateOptions()">
+        <option value="Esso">Esso</option>
+        <option value="Shell">Shell</option>
+      </select>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th style="text-align: left;">星期/活動</th>
-          <th style="text-align: left;">優惠方案</th>
-          <th>折後每升</th>
-          <th>每升總減</th>
-        </tr>
-      </thead>
-      <tbody id="shell-table"></tbody>
-    </table>
+    <div class="row">
+      <label>特級汽油 (Premium Price)</label>
+      <input type="number" id="pricePremium" value="30.09" step="0.01" oninput="calculate()">
+    </div>
+    <div class="row">
+      <label>普通汽油 (Standard Price)</label>
+      <input type="number" id="priceStandard" value="28.29" step="0.01" oninput="calculate()">
+    </div>
   </div>
 
-  <!-- Caltex -->
-  <div class="brand-card">
-    <div class="brand-header">
-      <span class="brand-title brand-caltex">🟢 Caltex 加德士</span>
-      <span style="font-size: 12px; color: #666;">基準特級: $30.09 / 普通: $28.29</span>
+  <!-- 優惠方案與消費金額 -->
+  <div class="card">
+    <h2>2. 優惠方案設定</h2>
+    <div class="row">
+      <label>優惠活動模式</label>
+      <select id="promoPreset" onchange="applyPreset()">
+        <option value="custom">自訂優惠</option>
+        <option value="esso_mon">Esso 週一/三 (1000分換$268油)</option>
+        <option value="esso_tue">Esso 週二/五 (直減 $8.5/L)</option>
+        <option value="esso_sat">Esso 週六/日 (Mastercard $8/L 2x分)</option>
+        <option value="shell_mon">Shell 週一/四 (直減 $5.0/L)</option>
+        <option value="shell_tue">Shell 週二/五 (直減 $7.0/L)</option>
+        <option value="shell_sat">Shell 週六 (直減 $7.0/L 3x分)</option>
+      </select>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th style="text-align: left;">星期/活動</th>
-          <th style="text-align: left;">優惠方案</th>
-          <th>折後每升</th>
-          <th>每升總減</th>
-        </tr>
-      </thead>
-      <tbody id="caltex-table"></tbody>
-    </table>
+    <div class="row">
+      <label>每升直減折扣 ($/L)</label>
+      <input type="number" id="discount" value="1.60" step="0.1" oninput="calculate()">
+    </div>
+    <div class="row">
+      <label>目標消費金額 ($)</label>
+      <input type="number" id="spending" value="500.00" step="10" oninput="calculate()">
+    </div>
+    <div class="row">
+      <label>贈送金額/油券 ($)</label>
+      <input type="number" id="giftedAmount" value="268.00" step="10" oninput="calculate()">
+    </div>
+    <div class="row">
+      <label>兌換使用積分 (Points Redeemed)</label>
+      <input type="number" id="ptsRedeemed" value="1000" step="100" oninput="calculate()">
+    </div>
   </div>
 
   <script>
-    const pPremium = 30.09;
-    const pStandard = 28.29;
+    function updateOptions() {
+      calculate();
+    }
 
-    // 數據設定檔 (完全依據 Excel 計算式)
-    const essoPromos = [
-      { day: "週一 / 三", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000 },
-      { day: "週二 / 五", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0 },
-      { day: "週四", promo: "免費升級", disc: 1.60, gift: 0, ptsRedeemed: 0, freeUpgrade: true },
-      { day: "週六 / 日", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0 },
-      { day: "啟德/特別", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: true }
-    ];
-
-    const shellPromos = [
-      { day: "週一 / 四", promo: "直減 $5.0/L", disc: 5.00, gift: 0 },
-      { day: "週二 / 五 / 日", promo: "直減 $7.0/L", disc: 7.00, gift: 0 },
-      { day: "週三", promo: "免費升級", disc: 7.00, gift: 0, freeUpgrade: true },
-      { day: "週六", promo: "直減 $7.0/L (3x積分)", disc: 7.00, gift: 0 },
-      { day: "特別優惠", promo: "免費升級 + 直減 $7.6/L", disc: 7.60, gift: 0, freeUpgrade: true }
-    ];
-
-    const caltexPromos = [
-      { day: "週一 / 四", promo: "直減 $6.0/L", disc: 6.00, gift: 0 },
-      { day: "週二 / 五", promo: "免費升級 (免費升V-Power)", disc: 1.80, gift: 0, freeUpgrade: true },
-      { day: "週三 / 六 / 日", promo: "直減 $7.2/L", disc: 7.20, gift: 0 },
-      { day: "JoyFuel 卡", promo: "專屬卡直減 $8.0/L", disc: 8.00, gift: 0 }
-    ];
-
-    function calcRow(item, spending) {
-      let disc = item.disc;
-      let giftedAmount = item.gift || 0;
-      let ptsRedeemed = item.ptsRedeemed || 0;
-
-      // 付費容量 = Spending / (Premium - Discount)
-      let volPaid = spending / (pPremium - disc);
-      
-      // 贈送容量
-      let volGift = 0;
-      if (giftedAmount > 0) {
-        volGift = giftedAmount / pStandard;
-      } else if (item.freeUpgrade) {
-        // 免費升級價值相當於差價
-        volGift = volPaid * ((pPremium - pStandard) / pStandard);
+    function applyPreset() {
+      const preset = document.getElementById('promoPreset').value;
+      if (preset === 'esso_mon') {
+        document.getElementById('brand').value = 'Esso';
+        document.getElementById('discount').value = 1.60;
+        document.getElementById('giftedAmount').value = 268.00;
+        document.getElementById('ptsRedeemed').value = 1000;
+      } else if (preset === 'esso_tue') {
+        document.getElementById('brand').value = 'Esso';
+        document.getElementById('discount').value = 8.50;
+        document.getElementById('giftedAmount').value = 0;
+        document.getElementById('ptsRedeemed').value = 0;
+      } else if (preset === 'esso_sat') {
+        document.getElementById('brand').value = 'Esso';
+        document.getElementById('discount').value = 9.80;
+        document.getElementById('giftedAmount').value = 0;
+        document.getElementById('ptsRedeemed').value = 0;
+      } else if (preset === 'shell_mon') {
+        document.getElementById('brand').value = 'Shell';
+        document.getElementById('discount').value = 5.00;
+        document.getElementById('giftedAmount').value = 0;
+        document.getElementById('ptsRedeemed').value = 0;
+      } else if (preset === 'shell_tue') {
+        document.getElementById('brand').value = 'Shell';
+        document.getElementById('discount').value = 7.00;
+        document.getElementById('giftedAmount').value = 0;
+        document.getElementById('ptsRedeemed').value = 0;
+      } else if (preset === 'shell_sat') {
+        document.getElementById('brand').value = 'Shell';
+        document.getElementById('discount').value = 7.00;
+        document.getElementById('giftedAmount').value = 0;
+        document.getElementById('ptsRedeemed').value = 0;
       }
-
-      let totalVol = volPaid + volGift;
-      let ptsValue = (ptsRedeemed / 1000) * 33.33; // Excel 點數換算比例
-
-      // 折後每升價錢
-      let finalPriceL = (spending + ptsValue) / totalVol;
-      let totalDiscL = pPremium - finalPriceL;
-
-      return {
-        price: finalPriceL.toFixed(2),
-        disc: totalDiscL.toFixed(2)
-      };
+      calculate();
     }
 
-    function renderTable(tableId, dataList, spending) {
-      const tbody = document.getElementById(tableId);
-      tbody.innerHTML = "";
-      dataList.forEach(item => {
-        let res = calcRow(item, spending);
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="day">${item.day}</td>
-          <td class="promo">${item.promo}</td>
-          <td class="price">$${res.price}</td>
-          <td class="disc">-$${res.disc}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+    function calculate() {
+      const pPremium = parseFloat(document.getElementById('pricePremium').value) || 30.09;
+      const pStandard = parseFloat(document.getElementById('priceStandard').value) || 28.29;
+      const discount = parseFloat(document.getElementById('discount').value) || 0;
+      const spending = parseFloat(document.getElementById('spending').value) || 0;
+      const giftedAmount = parseFloat(document.getElementById('giftedAmount').value) || 0;
+      const ptsRedeemed = parseFloat(document.getElementById('ptsRedeemed').value) || 0;
+      const brand = document.getElementById('brand').value;
+
+      // 1. 付費油量 Volume Paid (L) = Spending / (Premium - Discount)
+      const netPaidPriceL = Math.max(0.1, pPremium - discount);
+      const volPaid = spending / netPaidPriceL;
+
+      // 2. 贈送油量 Volume Gifted (L) = Gifted Amount / Standard Price
+      const volGifted = giftedAmount > 0 ? (giftedAmount / pStandard) : 0;
+
+      // 3. 總油量 Total Volume
+      const totalVol = volPaid + volGifted;
+
+      if (totalVol <= 0) return;
+
+      // 4. 點數折算價值 (Point to $)
+      // 依 Excel: 1000 點 Esso 相當於 $33.33 超市禮券價值
+      const ptsToDollar = (ptsRedeemed / 1000) * 33.33;
+
+      // 5. 優惠後每升單價 (Price per Liter with promotion)
+      const pricePerLiterPromo = (spending + ptsToDollar) / totalVol;
+
+      // 6. 每升總折扣 (Total discount per Liter)
+      const totalDiscountPerLiter = pPremium - pricePerLiterPromo;
+
+      // 7. 賺取積分計算 (Points Earned)
+      let ptsEarned = volPaid * 15; // 基本率
+      const preset = document.getElementById('promoPreset').value;
+      if (preset === 'esso_sat') ptsEarned *= 2; // 2x 積分
+      if (preset === 'shell_sat') ptsEarned *= 3; // 3x 積分
+
+      // 8. 積分回贈金額 (超市禮券換算)
+      const ptsCouponVal = (ptsEarned / 1000) * 33.33;
+
+      // 9. 扣除賺取積分後每升淨價
+      const pricePerLiterPts = (spending + ptsToDollar - ptsCouponVal) / totalVol;
+      const totalDiscountPts = pPremium - pricePerLiterPts;
+
+      // 更新介面
+      document.getElementById('res-vol').innerText = totalVol.toFixed(2) + ' L';
+      document.getElementById('res-vol-paid').innerText = volPaid.toFixed(2);
+      document.getElementById('res-vol-gift').innerText = volGifted.toFixed(2);
+      
+      document.getElementById('res-price-l').innerText = '$' + pricePerLiterPromo.toFixed(2);
+      document.getElementById('res-disc-l').innerText = '$' + totalDiscountPerLiter.toFixed(2);
+      
+      document.getElementById('res-price-pts').innerText = '$' + pricePerLiterPts.toFixed(2);
+      document.getElementById('res-disc-pts').innerText = '$' + totalDiscountPts.toFixed(2);
+
+      document.getElementById('res-pts-earned').innerText = ptsEarned.toFixed(0) + ' pts ($' + ptsCouponVal.toFixed(2) + ')';
     }
 
-    function calculateAll() {
-      let spending = parseFloat(document.getElementById("spending").value) || 500;
-      renderTable("esso-table", essoPromos, spending);
-      renderTable("shell-table", shellPromos, spending);
-      renderTable("caltex-table", caltexPromos, spending);
-    }
-
-    calculateAll();
+    calculate();
   </script>
 </body>
 </html>
