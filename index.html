@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>油價計算器 Oil Price Calculator</title>
+  
+  <!-- iOS PWA 支援標籤 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="油價計算器">
+  
+  <style>
+    :root {
+      --primary-color: #007aff;
+      --bg-color: #f2f2f7;
+      --card-bg: #ffffff;
+      --text-color: #1c1c1e;
+      --border-color: #e5e5ea;
+    }
+
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .header {
+      padding: 16px 0 8px 0;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      margin: 0;
+      color: #000;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .card h2 {
+      font-size: 16px;
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .input-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .input-group label {
+      font-size: 14px;
+      color: #3a3a3c;
+      flex: 1;
+    }
+
+    .input-group input {
+      width: 110px;
+      padding: 8px 10px;
+      font-size: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      text-align: right;
+      background-color: #f9f9f9;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background-color: #fff;
+    }
+
+    .result-card {
+      background: #1c1c1e;
+      color: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .result-card h2 {
+      color: #5ea9ff;
+      border-bottom: 1px solid #38383a;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .result-row.highlight {
+      font-size: 18px;
+      font-weight: bold;
+      color: #30d158;
+      border-top: 1px dashed #38383a;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>⛽ 油價計算器 (Oil Price Calculator)</h1>
+  </div>
+
+  <div class="result-card">
+    <h2>📊 計算結果 (Results)</h2>
+    <div class="result-row">
+      <span>基準成本 (Base Price):</span>
+      <span id="res-base">$0.00</span>
+    </div>
+    <div class="result-row">
+      <span>到岸總成本 (Landed Cost):</span>
+      <span id="res-landed">$0.00</span>
+    </div>
+    <div class="result-row">
+      <span>營運總成本 (Total Cost):</span>
+      <span id="res-total">$0.00</span>
+    </div>
+    <div class="result-row highlight">
+      <span>建議零售價 (Retail Price):</span>
+      <span id="res-retail">$0.00</span>
+    </div>
+    <div class="result-row">
+      <span>預估毛利 (Gross Profit):</span>
+      <span id="res-profit" style="color: #ffd60a;">$0.00</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>1. 原油/基準價 (Base Price)</h2>
+    <div class="input-group">
+      <label for="platts">Platts 基準油價 ($/BBL)</label>
+      <input type="number" id="platts" value="85.00" step="0.1" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label for="premium">溢價 / 折價 ($/BBL)</label>
+      <input type="number" id="premium" value="2.50" step="0.1" oninput="calculate()">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. 運費與稅率 (Logistics & Tax)</h2>
+    <div class="input-group">
+      <label for="freight">海運運費 ($/BBL)</label>
+      <input type="number" id="freight" value="3.20" step="0.1" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label for="insurance">保險費率 (%)</label>
+      <input type="number" id="insurance" value="0.5" step="0.05" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label for="dutyRate">關稅/進口稅率 (%)</label>
+      <input type="number" id="dutyRate" value="5.0" step="0.1" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label for="handling">港口雜費 ($/BBL)</label>
+      <input type="number" id="handling" value="1.10" step="0.1" oninput="calculate()">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. 內陸營運與目標利潤 (Operations & Margin)</h2>
+    <div class="input-group">
+      <label for="transport">陸運運輸費 ($/BBL)</label>
+      <input type="number" id="transport" value="2.00" step="0.1" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label for="overhead">油站/營運管銷 ($/BBL)</label>
+      <input type="number" id="overhead" value="4.50" step="0.1" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label for="margin">目標毛利率 (%)</label>
+      <input type="number" id="margin" value="15.0" step="0.5" oninput="calculate()">
+    </div>
+  </div>
+
+  <script>
+    function calculate() {
+      const platts = parseFloat(document.getElementById('platts').value) || 0;
+      const premium = parseFloat(document.getElementById('premium').value) || 0;
+      const freight = parseFloat(document.getElementById('freight').value) || 0;
+      const insuranceRate = (parseFloat(document.getElementById('insurance').value) || 0) / 100;
+      const dutyRate = (parseFloat(document.getElementById('dutyRate').value) || 0) / 100;
+      const handling = parseFloat(document.getElementById('handling').value) || 0;
+      const transport = parseFloat(document.getElementById('transport').value) || 0;
+      const overhead = parseFloat(document.getElementById('overhead').value) || 0;
+      const marginRate = (parseFloat(document.getElementById('margin').value) || 0) / 100;
+
+      const baseCost = platts + premium;
+      const insuranceFee = baseCost * insuranceRate;
+      const dutyFee = (baseCost + freight) * dutyRate;
+      const landedCost = baseCost + freight + insuranceFee + dutyFee + handling;
+      const totalCost = landedCost + transport + overhead;
+
+      let retailPrice = 0;
+      if (marginRate < 1) {
+        retailPrice = totalCost / (1 - marginRate);
+      }
+
+      const grossProfit = retailPrice - totalCost;
+
+      document.getElementById('res-base').innerText = '$' + baseCost.toFixed(2);
+      document.getElementById('res-landed').innerText = '$' + landedCost.toFixed(2);
+      document.getElementById('res-total').innerText = '$' + totalCost.toFixed(2);
+      document.getElementById('res-retail').innerText = '$' + retailPrice.toFixed(2);
+      document.getElementById('res-profit').innerText = '$' + grossProfit.toFixed(2);
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
