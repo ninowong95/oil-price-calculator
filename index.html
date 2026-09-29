@@ -42,6 +42,7 @@
       font-weight: 500;
     }
 
+    /* 頂部油價與 Refresh */
     .prices-card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -87,15 +88,9 @@
       font-weight: 600;
       border-radius: 8px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
-    .refresh-btn:active {
-      opacity: 0.8;
-    }
-
+    /* 最平 3 個方案卡片 */
     .top3-card {
       background: #1c1c1e;
       color: #fff;
@@ -127,10 +122,6 @@
       margin-bottom: 6px;
     }
 
-    .top3-item:last-child {
-      margin-bottom: 0;
-    }
-
     .top3-badge {
       background: #30d158;
       color: #000;
@@ -146,6 +137,7 @@
       font-weight: bold;
     }
 
+    /* 由左至右卡片容器 */
     .brands-container {
       display: flex;
       gap: 12px;
@@ -160,8 +152,8 @@
       border-radius: 12px;
       padding: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      flex: 0 0 88%;
-      max-width: 420px;
+      flex: 0 0 92%;
+      max-width: 440px;
       scroll-snap-align: start;
       box-sizing: border-box;
     }
@@ -186,6 +178,22 @@
       font-weight: bold;
     }
 
+    .edit-btn {
+      background: #e5e5ea;
+      color: #007aff;
+      border: none;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .edit-btn.saving {
+      background: #30d158;
+      color: #fff;
+    }
+
     .brand-caltex { color: #00838f; }
     .brand-shell { color: #d6a100; }
     .brand-esso { color: #e60012; }
@@ -193,11 +201,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     th, td {
-      padding: 6px 4px;
+      padding: 5px 3px;
       text-align: center;
     }
 
@@ -210,25 +218,31 @@
     td.day {
       font-weight: 600;
       text-align: left;
-      width: 24%;
     }
 
     td.promo {
       font-size: 11px;
-      color: #666;
+      color: #555;
       text-align: left;
-      width: 38%;
     }
 
     td.price {
       font-weight: bold;
       color: #30d158;
-      width: 19%;
     }
 
     td.disc {
       color: #ff9500;
-      width: 19%;
+    }
+
+    /* 編輯模式樣式 */
+    .edit-input {
+      width: 95%;
+      padding: 3px;
+      font-size: 11px;
+      border: 1px solid #007aff;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -254,104 +268,142 @@
   </div>
 
   <div class="top3-card">
-    <h2>🏆 最平 3 個入油方案</h2>
+    <h2>🏆 最平 3 個入油方案 ($500 試算)</h2>
     <div class="top3-list" id="top3List"></div>
   </div>
 
+  <!-- 由左至右：Caltex ➔ Shell ➔ Esso -->
   <div class="brands-container">
+    
+    <!-- 1. Caltex Section -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-caltex">🟢 Caltex 加德士</span>
+        <button class="edit-btn" id="btn-edit-caltex" onclick="toggleEdit('caltex')">✏️ Edit</button>
       </div>
       <table>
         <thead>
           <tr>
-            <th style="text-align: left;">日/活動</th>
-            <th style="text-align: left;">優惠方案</th>
-            <th>折後每升</th>
-            <th>每升總減</th>
+            <th style="width:22%; text-align:left;">日/活動</th>
+            <th style="width:40%; text-align:left;">優惠方案</th>
+            <th style="width:19%;">折後/L</th>
+            <th style="width:19%;">每升減</th>
           </tr>
         </thead>
         <tbody id="caltex-table"></tbody>
       </table>
     </div>
 
+    <!-- 2. Shell Section -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-shell">🟡 Shell 殼牌</span>
+        <button class="edit-btn" id="btn-edit-shell" onclick="toggleEdit('shell')">✏️ Edit</button>
       </div>
       <table>
         <thead>
           <tr>
-            <th style="text-align: left;">日/活動</th>
-            <th style="text-align: left;">優惠方案</th>
-            <th>折後每升</th>
-            <th>每升總減</th>
+            <th style="width:22%; text-align:left;">日/活動</th>
+            <th style="width:40%; text-align:left;">優惠方案</th>
+            <th style="width:19%;">折後/L</th>
+            <th style="width:19%;">每升減</th>
           </tr>
         </thead>
         <tbody id="shell-table"></tbody>
       </table>
     </div>
 
+    <!-- 3. Esso Section -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-esso">🔴 Esso 埃索</span>
+        <button class="edit-btn" id="btn-edit-esso" onclick="toggleEdit('esso')">✏️ Edit</button>
       </div>
       <table>
         <thead>
           <tr>
-            <th style="text-align: left;">日/活動</th>
-            <th style="text-align: left;">優惠方案</th>
-            <th>折後每升</th>
-            <th>每升總減</th>
+            <th style="width:22%; text-align:left;">日/活動</th>
+            <th style="width:40%; text-align:left;">優惠方案</th>
+            <th style="width:19%;">折後/L</th>
+            <th style="width:19%;">每升減</th>
           </tr>
         </thead>
         <tbody id="esso-table"></tbody>
       </table>
     </div>
+
   </div>
 
   <script>
     const fixedSpending = 500;
 
-    const caltexPromos = [
-      { company: "加德士", day: "特別 1", promo: "JoyFuel 卡直減 $8.0/L", disc: 8.00 },
-      { company: "加德士", day: "特別 2", promo: "專屬活動減 $7.5/L", disc: 7.50 },
-      { company: "加德士", day: "星期一", promo: "直減 $6.0/L", disc: 6.00 },
-      { company: "加德士", day: "星期二", promo: "免費升級 (免費升V-Power)", disc: 1.80, freeUpgrade: true },
-      { company: "加德士", day: "星期三", promo: "直減 $7.2/L", disc: 7.20 },
-      { company: "加德士", day: "星期四", promo: "直減 $6.0/L", disc: 6.00 },
-      { company: "加德士", day: "星期五", promo: "免費升級 (免費升V-Power)", disc: 1.80, freeUpgrade: true },
-      { company: "加德士", day: "星期六", promo: "直減 $7.2/L", disc: 7.20 },
-      { company: "加德士", day: "星期日", promo: "直減 $7.2/L", disc: 7.20 }
+    // 各公司狀態（編輯狀態與數據集）
+    const editState = { caltex: false, shell: false, esso: false };
+
+    // 1. Caltex 獨有優惠資料集
+    let caltexPromos = [
+      { id: "c1", company: "加德士", day: "特別 1", promo: "JoyFuel 卡直減 $8.0/L", disc: 8.00, freeUpgrade: false },
+      { id: "c2", company: "加德士", day: "特別 2", promo: "專屬活動減 $7.5/L", disc: 7.50, freeUpgrade: false },
+      { id: "c3", company: "加德士", day: "星期一", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false },
+      { id: "c4", company: "加德士", day: "星期二", promo: "免費升級 (免費升V-Power)", disc: 1.80, freeUpgrade: true },
+      { id: "c5", company: "加德士", day: "星期三", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false },
+      { id: "c6", company: "加德士", day: "星期四", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false },
+      { id: "c7", company: "加德士", day: "星期五", promo: "免費升級 (免費升V-Power)", disc: 1.80, freeUpgrade: true },
+      { id: "c8", company: "加德士", day: "星期六", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false },
+      { id: "c9", company: "加德士", day: "星期日", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false }
     ];
 
-    const shellPromos = [
-      { company: "Shell", day: "特別 1", promo: "免費升級 + 直減 $7.6/L (3x分)", disc: 7.60, freeUpgrade: true },
-      { company: "Shell", day: "特別 2", promo: "特別推廣減 $7.0/L", disc: 7.00 },
-      { company: "Shell", day: "星期一", promo: "直減 $5.0/L", disc: 5.00 },
-      { company: "Shell", day: "星期二", promo: "直減 $7.0/L", disc: 7.00 },
-      { company: "Shell", day: "星期三", promo: "免費升級", disc: 7.00, freeUpgrade: true },
-      { company: "Shell", day: "星期四", promo: "直減 $5.0/L", disc: 5.00 },
-      { company: "Shell", day: "星期五", promo: "直減 $7.0/L", disc: 7.00 },
-      { company: "Shell", day: "星期六", promo: "直減 $7.0/L (3x積分)", disc: 7.00 },
-      { company: "Shell", day: "星期日", promo: "直減 $7.0/L", disc: 7.00 }
+    // 2. Shell 獨有優惠資料集
+    let shellPromos = [
+      { id: "s1", company: "Shell", day: "特別 1", promo: "免費升級 + 直減 $7.6/L", disc: 7.60, freeUpgrade: true },
+      { id: "s2", company: "Shell", day: "特別 2", promo: "特別推廣減 $7.0/L", disc: 7.00, freeUpgrade: false },
+      { id: "s3", company: "Shell", day: "星期一", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false },
+      { id: "s4", company: "Shell", day: "星期二", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false },
+      { id: "s5", company: "Shell", day: "星期三", promo: "免費升級", disc: 7.00, freeUpgrade: true },
+      { id: "s6", company: "Shell", day: "星期四", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false },
+      { id: "s7", company: "Shell", day: "星期五", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false },
+      { id: "s8", company: "Shell", day: "星期六", promo: "直減 $7.0/L (3x積分)", disc: 7.00, freeUpgrade: false },
+      { id: "s9", company: "Shell", day: "星期日", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false }
     ];
 
-    const essoPromos = [
-      { company: "Esso", day: "特別 1", promo: "滿$500送$200油券", disc: 1.60, gift: 200 },
-      { company: "Esso", day: "特別 2", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, freeUpgrade: true },
-      { company: "Esso", day: "星期一", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000 },
-      { company: "Esso", day: "星期二", promo: "直減 $8.5/L", disc: 8.50 },
-      { company: "Esso", day: "星期三", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000 },
-      { company: "Esso", day: "星期四", promo: "免費升級", disc: 1.60, freeUpgrade: true },
-      { company: "Esso", day: "星期五", promo: "直減 $8.5/L", disc: 8.50 },
-      { company: "Esso", day: "星期六", promo: "Mastercard減$8/L (2x分)", disc: 9.80 },
-      { company: "Esso", day: "星期日", promo: "Mastercard減$8/L (2x分)", disc: 9.80 }
+    // 3. Esso 獨有優惠資料集
+    let essoPromos = [
+      { id: "e1", company: "Esso", day: "特別 1", promo: "滿$500送$200油券", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: false },
+      { id: "e2", company: "Esso", day: "特別 2", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: true },
+      { id: "e3", company: "Esso", day: "星期一", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false },
+      { id: "e4", company: "Esso", day: "星期二", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
+      { id: "e5", company: "Esso", day: "星期三", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false },
+      { id: "e6", company: "Esso", day: "星期四", promo: "免費升級", disc: 1.60, gift: 0, ptsRedeemed: 0, freeUpgrade: true },
+      { id: "e7", company: "Esso", day: "星期五", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
+      { id: "e8", company: "Esso", day: "星期六", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
+      { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false }
     ];
 
-    function calcRow(item, pPremium, pStandard) {
-      let disc = item.disc;
+    // ================= 獨立計算邏輯 Sections =================
+
+    // SECTION 1: Caltex 專屬計算模組
+    function calcCaltexRow(item, pPremium, pStandard) {
+      let disc = item.disc || 0;
+      let volPaid = fixedSpending / (pPremium - disc);
+      let volGift = item.freeUpgrade ? volPaid * ((pPremium - pStandard) / pStandard) : 0;
+      let totalVol = volPaid + volGift;
+      let finalPriceL = fixedSpending / totalVol;
+      return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
+    }
+
+    // SECTION 2: Shell 專屬計算模組
+    function calcShellRow(item, pPremium, pStandard) {
+      let disc = item.disc || 0;
+      let volPaid = fixedSpending / (pPremium - disc);
+      let volGift = item.freeUpgrade ? volPaid * ((pPremium - pStandard) / pStandard) : 0;
+      let totalVol = volPaid + volGift;
+      let finalPriceL = fixedSpending / totalVol;
+      return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
+    }
+
+    // SECTION 3: Esso 專屬計算模組 (含點數與送券)
+    function calcEssoRow(item, pPremium, pStandard) {
+      let disc = item.disc || 0;
       let giftedAmount = item.gift || 0;
       let ptsRedeemed = item.ptsRedeemed || 0;
 
@@ -365,37 +417,84 @@
       }
 
       let totalVol = volPaid + volGift;
-      let ptsValue = (ptsRedeemed / 1000) * 33.33;
+      let ptsValue = (ptsRedeemed / 1000) * 33.33; // 1000分換 $33.33
 
       let finalPriceL = (fixedSpending + ptsValue) / totalVol;
-      let totalDiscL = pPremium - finalPriceL;
-
-      return {
-        priceNum: finalPriceL,
-        priceStr: finalPriceL.toFixed(2),
-        discStr: totalDiscL.toFixed(2)
-      };
+      return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
     }
 
-    function renderTable(tableId, dataList, pPremium, pStandard) {
+    // 通用計算選取
+    function calcItem(item, pPremium, pStandard) {
+      if (item.company === "加德士") return calcCaltexRow(item, pPremium, pStandard);
+      if (item.company === "Shell") return calcShellRow(item, pPremium, pStandard);
+      if (item.company === "Esso") return calcEssoRow(item, pPremium, pStandard);
+      return { priceNum: 99, priceStr: "0.00", discStr: "0.00" };
+    }
+
+    // ================= UI 渲染與編輯控制 =================
+
+    function toggleEdit(brandKey) {
+      editState[brandKey] = !editState[brandKey];
+      const btn = document.getElementById(`btn-edit-${brandKey}`);
+      
+      if (editState[brandKey]) {
+        btn.innerText = "💾 Save";
+        btn.classList.add("saving");
+      } else {
+        btn.innerText = "✏️ Edit";
+        btn.classList.remove("saving");
+        saveInputValues(brandKey);
+      }
+      calculateAll();
+    }
+
+    function saveInputValues(brandKey) {
+      let list = brandKey === 'caltex' ? caltexPromos : (brandKey === 'shell' ? shellPromos : essoPromos);
+      list.forEach(item => {
+        const dayEl = document.getElementById(`${item.id}-day`);
+        const promoEl = document.getElementById(`${item.id}-promo`);
+        const discEl = document.getElementById(`${item.id}-disc`);
+
+        if (dayEl) item.day = dayEl.value;
+        if (promoEl) item.promo = promoEl.value;
+        if (discEl) item.disc = parseFloat(discEl.value) || 0;
+      });
+    }
+
+    function renderTable(tableId, dataList, brandKey, pPremium, pStandard) {
       const tbody = document.getElementById(tableId);
       tbody.innerHTML = "";
+      const isEditing = editState[brandKey];
+
       dataList.forEach(item => {
-        let res = calcRow(item, pPremium, pStandard);
+        let res = calcItem(item, pPremium, pStandard);
         let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="day">${item.day}</td>
-          <td class="promo">${item.promo}</td>
-          <td class="price">$${res.priceStr}</td>
-          <td class="disc">-$${res.discStr}</td>
-        `;
+
+        if (isEditing) {
+          tr.innerHTML = `
+            <td><input class="edit-input" id="${item.id}-day" value="${item.day}"></td>
+            <td>
+              <input class="edit-input" id="${item.id}-promo" value="${item.promo}">
+              <div style="margin-top:2px;">減/L: <input type="number" step="0.1" class="edit-input" style="width:50px;" id="${item.id}-disc" value="${item.disc}"></div>
+            </td>
+            <td class="price">$${res.priceStr}</td>
+            <td class="disc">-$${res.discStr}</td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td class="day">${item.day}</td>
+            <td class="promo">${item.promo}</td>
+            <td class="price">$${res.priceStr}</td>
+            <td class="disc">-$${res.discStr}</td>
+          `;
+        }
         tbody.appendChild(tr);
       });
     }
 
     function updateTop3(allPromos, pPremium, pStandard) {
       let calculatedList = allPromos.map(item => {
-        let res = calcRow(item, pPremium, pStandard);
+        let res = calcItem(item, pPremium, pStandard);
         return {
           company: item.company,
           day: item.day,
@@ -407,7 +506,7 @@
 
       calculatedList.sort((a, b) => a.priceNum - b.priceNum);
       let top3 = calculatedList.slice(0, 3);
-      
+
       const top3Container = document.getElementById("top3List");
       top3Container.innerHTML = "";
 
@@ -429,37 +528,32 @@
       let pPremium = parseFloat(document.getElementById("pPremium").value) || 30.09;
       let pStandard = parseFloat(document.getElementById("pStandard").value) || 28.29;
 
-      renderTable("caltex-table", caltexPromos, pPremium, pStandard);
-      renderTable("shell-table", shellPromos, pPremium, pStandard);
-      renderTable("esso-table", essoPromos, pPremium, pStandard);
+      renderTable("caltex-table", caltexPromos, "caltex", pPremium, pStandard);
+      renderTable("shell-table", shellPromos, "shell", pPremium, pStandard);
+      renderTable("esso-table", essoPromos, "esso", pPremium, pStandard);
 
       const allPromos = [...caltexPromos, ...shellPromos, ...essoPromos];
       updateTop3(allPromos, pPremium, pStandard);
     }
 
-    // 使用 CORS 代理服務連線消委會 API
     async function fetchLatestOilPrice() {
       const btnText = document.getElementById("btnText");
       btnText.innerText = "更新中...";
 
-      // CORS 代理網址
       const targetUrl = "https://www.consumer.org.hk/pricewatch/oilwatch/opendata/oilprice.json";
       const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(targetUrl);
 
       try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error("HTTP error " + response.status);
-        
         const data = await response.json();
 
-        // 更新日期
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         document.getElementById("versionDate").innerText = `${year}${month}${day}`;
 
-        // 提取 API 油價
         let premiumPrices = [];
         let standardPrices = [];
 
@@ -467,38 +561,24 @@
           data.forEach(item => {
             let p = parseFloat(item.price);
             if (!isNaN(p) && p > 0) {
-              if (item.type_zh && item.type_zh.includes("特級")) {
-                premiumPrices.push(p);
-              } else if (item.type_zh && (item.type_zh.includes("無鉛") || item.type_zh.includes("普通"))) {
-                standardPrices.push(p);
-              }
+              if (item.type_zh && item.type_zh.includes("特級")) premiumPrices.push(p);
+              else if (item.type_zh && (item.type_zh.includes("無鉛") || item.type_zh.includes("普通"))) standardPrices.push(p);
             }
           });
         }
 
-        // 取出現有價格的平均數或最新價
-        if (premiumPrices.length > 0) {
-          const maxPremium = Math.max(...premiumPrices);
-          document.getElementById("pPremium").value = maxPremium.toFixed(2);
-        }
-        if (standardPrices.length > 0) {
-          const maxStandard = Math.max(...standardPrices);
-          document.getElementById("pStandard").value = maxStandard.toFixed(2);
-        }
+        if (premiumPrices.length > 0) document.getElementById("pPremium").value = Math.max(...premiumPrices).toFixed(2);
+        if (standardPrices.length > 0) document.getElementById("pStandard").value = Math.max(...standardPrices).toFixed(2);
 
         calculateAll();
         alert("✅ 油價與版本日期已成功更新！");
       } catch (error) {
-        console.error("Fetch failed via proxy:", error);
-        
-        // 備用機制：更新版本日期並重算
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         document.getElementById("versionDate").innerText = `${year}${month}${day}`;
         calculateAll();
-        
         alert("✅ 版本日期已更新！(目前已是最新牌價)");
       } finally {
         btnText.innerText = "Refresh";
