@@ -42,7 +42,7 @@
       font-weight: 500;
     }
 
-    /* 頂部油價與 Refresh */
+    /* 頂部油價卡片 */
     .prices-card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -159,9 +159,7 @@
     }
 
     @media (min-width: 768px) {
-      .brand-card {
-        flex: 1;
-      }
+      .brand-card { flex: 1; }
     }
 
     .brand-header {
@@ -189,8 +187,8 @@
       cursor: pointer;
     }
 
-    .edit-btn.saving {
-      background: #30d158;
+    .edit-btn.active {
+      background: #ff9500;
       color: #fff;
     }
 
@@ -201,11 +199,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 13px;
     }
 
     th, td {
-      padding: 5px 3px;
+      padding: 7px 4px;
       text-align: center;
     }
 
@@ -215,34 +213,123 @@
       border-bottom: 1px solid var(--border);
     }
 
-    td.day {
+    tr.clickable-row {
+      transition: background-color 0.15s;
+    }
+
+    tr.editable-mode {
+      cursor: pointer;
+      background-color: #f0f8ff;
+      border: 1px dashed #007aff;
+    }
+
+    tr.editable-mode:active {
+      background-color: #e0f0ff;
+    }
+
+    td.day { font-weight: 600; text-align: left; }
+    td.promo { font-size: 11px; color: #555; text-align: left; }
+    td.price { font-weight: bold; color: #30d158; }
+    td.disc { color: #ff9500; }
+
+    /* 彈出式編輯視窗 Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: #fff;
+      width: 90%;
+      max-width: 360px;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 16px;
+      color: #000;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: #666;
       font-weight: 600;
-      text-align: left;
     }
 
-    td.promo {
-      font-size: 11px;
-      color: #555;
-      text-align: left;
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f9f9f9;
     }
 
-    td.price {
-      font-weight: bold;
-      color: #30d158;
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 14px;
     }
 
-    td.disc {
-      color: #ff9500;
+    .checkbox-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
     }
 
-    /* 編輯模式樣式 */
-    .edit-input {
-      width: 95%;
-      padding: 3px;
-      font-size: 11px;
-      border: 1px solid #007aff;
-      border-radius: 4px;
-      box-sizing: border-box;
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .btn-cancel {
+      background: #e5e5ea;
+      color: #333;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-save {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -272,20 +359,19 @@
     <div class="top3-list" id="top3List"></div>
   </div>
 
-  <!-- 由左至右：Caltex ➔ Shell ➔ Esso -->
   <div class="brands-container">
     
-    <!-- 1. Caltex Section -->
+    <!-- Caltex -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-caltex">🟢 Caltex 加德士</span>
-        <button class="edit-btn" id="btn-edit-caltex" onclick="toggleEdit('caltex')">✏️ Edit</button>
+        <button class="edit-btn" id="btn-edit-caltex" onclick="toggleEditMode('caltex')">✏️ Edit</button>
       </div>
       <table>
         <thead>
           <tr>
-            <th style="width:22%; text-align:left;">日/活動</th>
-            <th style="width:40%; text-align:left;">優惠方案</th>
+            <th style="width:24%; text-align:left;">日/活動</th>
+            <th style="width:38%; text-align:left;">優惠方案</th>
             <th style="width:19%;">折後/L</th>
             <th style="width:19%;">每升減</th>
           </tr>
@@ -294,17 +380,17 @@
       </table>
     </div>
 
-    <!-- 2. Shell Section -->
+    <!-- Shell -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-shell">🟡 Shell 殼牌</span>
-        <button class="edit-btn" id="btn-edit-shell" onclick="toggleEdit('shell')">✏️ Edit</button>
+        <button class="edit-btn" id="btn-edit-shell" onclick="toggleEditMode('shell')">✏️ Edit</button>
       </div>
       <table>
         <thead>
           <tr>
-            <th style="width:22%; text-align:left;">日/活動</th>
-            <th style="width:40%; text-align:left;">優惠方案</th>
+            <th style="width:24%; text-align:left;">日/活動</th>
+            <th style="width:38%; text-align:left;">優惠方案</th>
             <th style="width:19%;">折後/L</th>
             <th style="width:19%;">每升減</th>
           </tr>
@@ -313,17 +399,17 @@
       </table>
     </div>
 
-    <!-- 3. Esso Section -->
+    <!-- Esso -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-esso">🔴 Esso 埃索</span>
-        <button class="edit-btn" id="btn-edit-esso" onclick="toggleEdit('esso')">✏️ Edit</button>
+        <button class="edit-btn" id="btn-edit-esso" onclick="toggleEditMode('esso')">✏️ Edit</button>
       </div>
       <table>
         <thead>
           <tr>
-            <th style="width:22%; text-align:left;">日/活動</th>
-            <th style="width:40%; text-align:left;">優惠方案</th>
+            <th style="width:24%; text-align:left;">日/活動</th>
+            <th style="width:38%; text-align:left;">優惠方案</th>
             <th style="width:19%;">折後/L</th>
             <th style="width:19%;">每升減</th>
           </tr>
@@ -334,26 +420,61 @@
 
   </div>
 
+  <!-- 彈出編輯 Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3 id="modalTitle">修改優惠方案</h3>
+      <input type="hidden" id="modalItemId">
+      <input type="hidden" id="modalBrand">
+
+      <div class="form-group">
+        <label>日 / 活動名稱</label>
+        <input type="text" id="modalDay">
+      </div>
+
+      <div class="form-group">
+        <label>優惠方案描述</label>
+        <input type="text" id="modalPromo">
+      </div>
+
+      <div class="form-group">
+        <label>每升直減金額 ($/L)</label>
+        <input type="number" step="0.1" id="modalDisc">
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="modalFreeUpgrade" style="width:18px; height:18px;">
+        <label for="modalFreeUpgrade">包含「免費升級」 (Free Upgrade)</label>
+      </div>
+
+      <div class="form-group" id="groupGift" style="display:none;">
+        <label>滿額贈送金額 ($)</label>
+        <input type="number" step="10" id="modalGift">
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-save" onclick="saveModalData()">儲存更新</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const fixedSpending = 500;
+    const isEditing = { caltex: false, shell: false, esso: false };
 
-    // 各公司狀態（編輯狀態與數據集）
-    const editState = { caltex: false, shell: false, esso: false };
-
-    // 1. Caltex 獨有優惠資料集
     let caltexPromos = [
       { id: "c1", company: "加德士", day: "特別 1", promo: "JoyFuel 卡直減 $8.0/L", disc: 8.00, freeUpgrade: false },
       { id: "c2", company: "加德士", day: "特別 2", promo: "專屬活動減 $7.5/L", disc: 7.50, freeUpgrade: false },
       { id: "c3", company: "加德士", day: "星期一", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false },
-      { id: "c4", company: "加德士", day: "星期二", promo: "免費升級 (免費升V-Power)", disc: 1.80, freeUpgrade: true },
+      { id: "c4", company: "加德士", day: "星期二", promo: "免費升級 (升V-Power)", disc: 1.80, freeUpgrade: true },
       { id: "c5", company: "加德士", day: "星期三", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false },
       { id: "c6", company: "加德士", day: "星期四", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false },
-      { id: "c7", company: "加德士", day: "星期五", promo: "免費升級 (免費升V-Power)", disc: 1.80, freeUpgrade: true },
+      { id: "c7", company: "加德士", day: "星期五", promo: "免費升級 (升V-Power)", disc: 1.80, freeUpgrade: true },
       { id: "c8", company: "加德士", day: "星期六", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false },
       { id: "c9", company: "加德士", day: "星期日", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false }
     ];
 
-    // 2. Shell 獨有優惠資料集
     let shellPromos = [
       { id: "s1", company: "Shell", day: "特別 1", promo: "免費升級 + 直減 $7.6/L", disc: 7.60, freeUpgrade: true },
       { id: "s2", company: "Shell", day: "特別 2", promo: "特別推廣減 $7.0/L", disc: 7.00, freeUpgrade: false },
@@ -366,7 +487,6 @@
       { id: "s9", company: "Shell", day: "星期日", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false }
     ];
 
-    // 3. Esso 獨有優惠資料集
     let essoPromos = [
       { id: "e1", company: "Esso", day: "特別 1", promo: "滿$500送$200油券", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: false },
       { id: "e2", company: "Esso", day: "特別 2", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: true },
@@ -375,119 +495,120 @@
       { id: "e5", company: "Esso", day: "星期三", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false },
       { id: "e6", company: "Esso", day: "星期四", promo: "免費升級", disc: 1.60, gift: 0, ptsRedeemed: 0, freeUpgrade: true },
       { id: "e7", company: "Esso", day: "星期五", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
-      { id: "e8", company: "Esso", day: "星期六", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
-      { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false }
+      { id: "e8", company: "Esso", day: "星期六", promo: "Mastercard減$8/L", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
+      { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false }
     ];
 
-    // ================= 獨立計算邏輯 Sections =================
-
-    // SECTION 1: Caltex 專屬計算模組
-    function calcCaltexRow(item, pPremium, pStandard) {
-      let disc = item.disc || 0;
-      let volPaid = fixedSpending / (pPremium - disc);
-      let volGift = item.freeUpgrade ? volPaid * ((pPremium - pStandard) / pStandard) : 0;
-      let totalVol = volPaid + volGift;
-      let finalPriceL = fixedSpending / totalVol;
-      return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
-    }
-
-    // SECTION 2: Shell 專屬計算模組
-    function calcShellRow(item, pPremium, pStandard) {
-      let disc = item.disc || 0;
-      let volPaid = fixedSpending / (pPremium - disc);
-      let volGift = item.freeUpgrade ? volPaid * ((pPremium - pStandard) / pStandard) : 0;
-      let totalVol = volPaid + volGift;
-      let finalPriceL = fixedSpending / totalVol;
-      return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
-    }
-
-    // SECTION 3: Esso 專屬計算模組 (含點數與送券)
-    function calcEssoRow(item, pPremium, pStandard) {
+    // 免費升級精準計算公式：
+    // 若為免費升級，付費容量是以 (Premium - Discount) 計算；升級容量為付費容量 * (Premium - Standard) / Standard
+    function calcItem(item, pPremium, pStandard) {
       let disc = item.disc || 0;
       let giftedAmount = item.gift || 0;
       let ptsRedeemed = item.ptsRedeemed || 0;
 
-      let volPaid = fixedSpending / (pPremium - disc);
+      let volPaid = fixedSpending / Math.max(0.1, pPremium - disc);
       let volGift = 0;
 
       if (giftedAmount > 0) {
         volGift = giftedAmount / pStandard;
-      } else if (item.freeUpgrade) {
-        volGift = volPaid * ((pPremium - pStandard) / pStandard);
+      }
+      
+      // 若包含免費升級，加上差價帶來的額外容量
+      if (item.freeUpgrade) {
+        volGift += volPaid * ((pPremium - pStandard) / pStandard);
       }
 
       let totalVol = volPaid + volGift;
-      let ptsValue = (ptsRedeemed / 1000) * 33.33; // 1000分換 $33.33
+      let ptsValue = (ptsRedeemed / 1000) * 33.33;
 
       let finalPriceL = (fixedSpending + ptsValue) / totalVol;
       return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
     }
 
-    // 通用計算選取
-    function calcItem(item, pPremium, pStandard) {
-      if (item.company === "加德士") return calcCaltexRow(item, pPremium, pStandard);
-      if (item.company === "Shell") return calcShellRow(item, pPremium, pStandard);
-      if (item.company === "Esso") return calcEssoRow(item, pPremium, pStandard);
-      return { priceNum: 99, priceStr: "0.00", discStr: "0.00" };
-    }
-
-    // ================= UI 渲染與編輯控制 =================
-
-    function toggleEdit(brandKey) {
-      editState[brandKey] = !editState[brandKey];
+    function toggleEditMode(brandKey) {
+      isEditing[brandKey] = !isEditing[brandKey];
       const btn = document.getElementById(`btn-edit-${brandKey}`);
-      
-      if (editState[brandKey]) {
-        btn.innerText = "💾 Save";
-        btn.classList.add("saving");
+      if (isEditing[brandKey]) {
+        btn.innerText = "Done";
+        btn.classList.add("active");
       } else {
         btn.innerText = "✏️ Edit";
-        btn.classList.remove("saving");
-        saveInputValues(brandKey);
+        btn.classList.remove("active");
       }
       calculateAll();
     }
 
-    function saveInputValues(brandKey) {
-      let list = brandKey === 'caltex' ? caltexPromos : (brandKey === 'shell' ? shellPromos : essoPromos);
-      list.forEach(item => {
-        const dayEl = document.getElementById(`${item.id}-day`);
-        const promoEl = document.getElementById(`${item.id}-promo`);
-        const discEl = document.getElementById(`${item.id}-disc`);
+    function openModal(brandKey, itemId) {
+      if (!isEditing[brandKey]) return; // 未點 Edit 不反應
 
-        if (dayEl) item.day = dayEl.value;
-        if (promoEl) item.promo = promoEl.value;
-        if (discEl) item.disc = parseFloat(discEl.value) || 0;
-      });
+      let list = brandKey === 'caltex' ? caltexPromos : (brandKey === 'shell' ? shellPromos : essoPromos);
+      let item = list.find(x => x.id === itemId);
+      if (!item) return;
+
+      document.getElementById("modalItemId").value = item.id;
+      document.getElementById("modalBrand").value = brandKey;
+      document.getElementById("modalDay").value = item.day;
+      document.getElementById("modalPromo").value = item.promo;
+      document.getElementById("modalDisc").value = item.disc;
+      document.getElementById("modalFreeUpgrade").checked = item.freeUpgrade || false;
+
+      // Esso 顯示送券選項
+      const groupGift = document.getElementById("groupGift");
+      if (brandKey === "esso") {
+        groupGift.style.display = "flex";
+        document.getElementById("modalGift").value = item.gift || 0;
+      } else {
+        groupGift.style.display = "none";
+      }
+
+      document.getElementById("editModal").classList.add("open");
+    }
+
+    function closeModal() {
+      document.getElementById("editModal").classList.remove("open");
+    }
+
+    function saveModalData() {
+      const itemId = document.getElementById("modalItemId").value;
+      const brandKey = document.getElementById("modalBrand").value;
+
+      let list = brandKey === 'caltex' ? caltexPromos : (brandKey === 'shell' ? shellPromos : essoPromos);
+      let item = list.find(x => x.id === itemId);
+
+      if (item) {
+        item.day = document.getElementById("modalDay").value;
+        item.promo = document.getElementById("modalPromo").value;
+        item.disc = parseFloat(document.getElementById("modalDisc").value) || 0;
+        item.freeUpgrade = document.getElementById("modalFreeUpgrade").checked;
+        if (brandKey === "esso") {
+          item.gift = parseFloat(document.getElementById("modalGift").value) || 0;
+        }
+      }
+
+      closeModal();
+      calculateAll();
     }
 
     function renderTable(tableId, dataList, brandKey, pPremium, pStandard) {
       const tbody = document.getElementById(tableId);
       tbody.innerHTML = "";
-      const isEditing = editState[brandKey];
+      const editable = isEditing[brandKey];
 
       dataList.forEach(item => {
         let res = calcItem(item, pPremium, pStandard);
         let tr = document.createElement("tr");
-
-        if (isEditing) {
-          tr.innerHTML = `
-            <td><input class="edit-input" id="${item.id}-day" value="${item.day}"></td>
-            <td>
-              <input class="edit-input" id="${item.id}-promo" value="${item.promo}">
-              <div style="margin-top:2px;">減/L: <input type="number" step="0.1" class="edit-input" style="width:50px;" id="${item.id}-disc" value="${item.disc}"></div>
-            </td>
-            <td class="price">$${res.priceStr}</td>
-            <td class="disc">-$${res.discStr}</td>
-          `;
-        } else {
-          tr.innerHTML = `
-            <td class="day">${item.day}</td>
-            <td class="promo">${item.promo}</td>
-            <td class="price">$${res.priceStr}</td>
-            <td class="disc">-$${res.discStr}</td>
-          `;
+        
+        tr.className = "clickable-row" + (editable ? " editable-mode" : "");
+        if (editable) {
+          tr.onclick = () => openModal(brandKey, item.id);
         }
+
+        tr.innerHTML = `
+          <td class="day">${item.day} ${editable ? "✏️" : ""}</td>
+          <td class="promo">${item.promo}</td>
+          <td class="price">$${res.priceStr}</td>
+          <td class="disc">-$${res.discStr}</td>
+        `;
         tbody.appendChild(tr);
       });
     }
