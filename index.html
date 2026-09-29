@@ -36,7 +36,6 @@
       margin: 0 0 4px 0;
     }
 
-    /* 頂部列：歷史油價 | 版本日期 | Refresh */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -71,7 +70,7 @@
       color: #fff;
     }
 
-    /* 最平 3 個方案卡片：改為左中右並排 */
+    /* 最平 3 個方案卡片 */
     .top3-card {
       background: #1c1c1e;
       color: #fff;
@@ -117,16 +116,17 @@
       display: inline-block;
     }
 
-    .badge-1 { background: #ffd700; color: #000; } /* 金 */
-    .badge-2 { background: #c0c0c0; color: #000; } /* 銀 */
-    .badge-3 { background: #cd7f32; color: #fff; } /* 銅 */
+    .badge-1 { background: #ffd700; color: #000; }
+    .badge-2 { background: #c0c0c0; color: #000; }
+    .badge-3 { background: #cd7f32; color: #fff; }
 
     .top3-company { font-size: 12px; font-weight: bold; color: #fff; }
     .top3-day { font-size: 10px; color: #aaa; margin: 2px 0; }
     .top3-promo { font-size: 10px; color: #ddd; height: 26px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .top3-price { color: #30d158; font-weight: bold; font-size: 13px; margin-top: 4px; }
+    .top3-price { color: #30d158; font-weight: bold; font-size: 12px; margin-top: 4px; }
+    .top3-pts-price { color: #ffd60a; font-size: 11px; }
 
-    /* 由左至右卡片容器 */
+    /* 水平滑動容器 */
     .brands-container {
       display: flex;
       gap: 12px;
@@ -139,10 +139,10 @@
     .brand-card {
       background: var(--card-bg);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      flex: 0 0 92%;
-      max-width: 440px;
+      flex: 0 0 95%;
+      max-width: 480px;
       scroll-snap-align: start;
       box-sizing: border-box;
     }
@@ -160,17 +160,37 @@
       margin-bottom: 8px;
     }
 
+    .brand-title-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .icon-caltex { background-color: #d32f2f; }
+    .icon-shell { background-color: #ffd600; color: #000; }
+    .icon-esso { background-color: #003399; }
+
     .brand-title {
       font-size: 16px;
       font-weight: bold;
     }
 
-    /* 油公司專屬顏色更新 */
-    .brand-caltex { color: #d32f2f; } /* 紅色 */
-    .brand-shell { color: #d6a100; }  /* 黃色 */
-    .brand-esso { color: #003399; }   /* 藍色 */
+    .brand-caltex { color: #d32f2f; }
+    .brand-shell { color: #d6a100; }
+    .brand-esso { color: #003399; }
 
-    /* 各卡片內部的油價輸入區域 */
     .company-price-box {
       background: #f8f9fa;
       border-radius: 8px;
@@ -218,11 +238,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     th, td {
-      padding: 7px 4px;
+      padding: 6px 2px;
       text-align: center;
     }
 
@@ -230,6 +250,7 @@
       color: #8e8e93;
       font-weight: normal;
       border-bottom: 1px solid var(--border);
+      font-size: 11px;
     }
 
     tr.clickable-row {
@@ -245,7 +266,8 @@
     td.day { font-weight: 600; text-align: left; }
     td.promo { font-size: 11px; color: #555; text-align: left; }
     td.price { font-weight: bold; color: #30d158; }
-    td.disc { color: #ff9500; }
+    td.pts-price { font-weight: bold; color: #d6a100; }
+    td.disc { color: #ff9500; font-size: 11px; }
 
     /* Modal 彈窗 */
     .modal-overlay {
@@ -343,7 +365,6 @@
     <h1>⛽ 3大油站每日價錢比價</h1>
   </div>
 
-  <!-- 頂部列：歷史油價 (備用) | 版本日期 | Refresh -->
   <div class="top-bar">
     <button class="top-bar-btn" onclick="openHistoryModal()">📜 歷史油價</button>
     <div class="version-tag"><span id="versionDate">20260929</span></div>
@@ -352,7 +373,6 @@
     </button>
   </div>
 
-  <!-- 最平 3 位方案：左中右 3 欄並排 -->
   <div class="top3-card">
     <h2>🏆 最平 3 個入油方案 ($500 試算)</h2>
     <div class="top3-grid" id="top3Grid"></div>
@@ -361,13 +381,16 @@
   <!-- 由左至右：Caltex ➔ Shell ➔ Esso -->
   <div class="brands-container">
     
-    <!-- 1. Caltex (加德士 - 紅色) -->
+    <!-- 1. Caltex -->
     <div class="brand-card">
       <div class="brand-header">
-        <span class="brand-title brand-caltex">🔴 Caltex 加德士</span>
+        <div class="brand-title-box">
+          <!-- Caltex Logo/Icon -->
+          <span class="brand-icon icon-caltex">★</span>
+          <span class="brand-title brand-caltex">Caltex 加德士</span>
+        </div>
         <button class="edit-btn" id="btn-edit-caltex" onclick="toggleEditMode('caltex')">✏️ Edit</button>
       </div>
-      <!-- 專屬油價區塊 -->
       <div class="company-price-box">
         <div><label>特級</label> <input type="number" id="caltex-pPremium" value="30.09" step="0.01" oninput="calculateAll()"></div>
         <div><label>普通</label> <input type="number" id="caltex-pStandard" value="28.29" step="0.01" oninput="calculateAll()"></div>
@@ -375,23 +398,27 @@
       <table>
         <thead>
           <tr>
-            <th style="width:24%; text-align:left;">日/活動</th>
-            <th style="width:38%; text-align:left;">優惠方案</th>
-            <th style="width:19%;">折後/L</th>
-            <th style="width:19%;">每升減</th>
+            <th style="width:20%; text-align:left;">日/活動</th>
+            <th style="width:34%; text-align:left;">優惠方案</th>
+            <th style="width:16%;">折後/L</th>
+            <th style="width:16%;">連積分/L</th>
+            <th style="width:14%;">每升減</th>
           </tr>
         </thead>
         <tbody id="caltex-table"></tbody>
       </table>
     </div>
 
-    <!-- 2. Shell (殼牌 - 黃色) -->
+    <!-- 2. Shell -->
     <div class="brand-card">
       <div class="brand-header">
-        <span class="brand-title brand-shell">🟡 Shell 殼牌</span>
+        <div class="brand-title-box">
+          <!-- Shell Logo/Icon -->
+          <span class="brand-icon icon-shell">🐚</span>
+          <span class="brand-title brand-shell">Shell 殼牌</span>
+        </div>
         <button class="edit-btn" id="btn-edit-shell" onclick="toggleEditMode('shell')">✏️ Edit</button>
       </div>
-      <!-- 專屬油價區塊 -->
       <div class="company-price-box">
         <div><label>特級</label> <input type="number" id="shell-pPremium" value="30.09" step="0.01" oninput="calculateAll()"></div>
         <div><label>普通</label> <input type="number" id="shell-pStandard" value="28.29" step="0.01" oninput="calculateAll()"></div>
@@ -399,23 +426,27 @@
       <table>
         <thead>
           <tr>
-            <th style="width:24%; text-align:left;">日/活動</th>
-            <th style="width:38%; text-align:left;">優惠方案</th>
-            <th style="width:19%;">折後/L</th>
-            <th style="width:19%;">每升減</th>
+            <th style="width:20%; text-align:left;">日/活動</th>
+            <th style="width:34%; text-align:left;">優惠方案</th>
+            <th style="width:16%;">折後/L</th>
+            <th style="width:16%;">連積分/L</th>
+            <th style="width:14%;">每升減</th>
           </tr>
         </thead>
         <tbody id="shell-table"></tbody>
       </table>
     </div>
 
-    <!-- 3. Esso (埃索 - 藍色) -->
+    <!-- 3. Esso -->
     <div class="brand-card">
       <div class="brand-header">
-        <span class="brand-title brand-esso">🔵 Esso 埃索</span>
+        <div class="brand-title-box">
+          <!-- Esso Logo/Icon -->
+          <span class="brand-icon icon-esso">E</span>
+          <span class="brand-title brand-esso">Esso 埃索</span>
+        </div>
         <button class="edit-btn" id="btn-edit-esso" onclick="toggleEditMode('esso')">✏️ Edit</button>
       </div>
-      <!-- 專屬油價區塊 -->
       <div class="company-price-box">
         <div><label>特級</label> <input type="number" id="esso-pPremium" value="30.09" step="0.01" oninput="calculateAll()"></div>
         <div><label>普通</label> <input type="number" id="esso-pStandard" value="28.29" step="0.01" oninput="calculateAll()"></div>
@@ -423,10 +454,11 @@
       <table>
         <thead>
           <tr>
-            <th style="width:24%; text-align:left;">日/活動</th>
-            <th style="width:38%; text-align:left;">優惠方案</th>
-            <th style="width:19%;">折後/L</th>
-            <th style="width:19%;">每升減</th>
+            <th style="width:20%; text-align:left;">日/活動</th>
+            <th style="width:34%; text-align:left;">優惠方案</th>
+            <th style="width:16%;">折後/L</th>
+            <th style="width:16%;">連積分/L</th>
+            <th style="width:14%;">每升減</th>
           </tr>
         </thead>
         <tbody id="esso-table"></tbody>
@@ -467,6 +499,11 @@
         <input type="number" step="10" id="modalGift">
       </div>
 
+      <div class="form-group">
+        <label>積分倍數 (例如: 2 代表 2x 積分)</label>
+        <input type="number" step="1" id="modalPtsMult" value="1">
+      </div>
+
       <div class="modal-buttons">
         <button class="btn-cancel" onclick="closeModal()">取消</button>
         <button class="btn-save" onclick="saveModalData()">儲存更新</button>
@@ -479,45 +516,46 @@
     const isEditing = { caltex: false, shell: false, esso: false };
 
     let caltexPromos = [
-      { id: "c1", company: "加德士", day: "特別 1", promo: "JoyFuel 卡直減 $8.0/L", disc: 8.00, freeUpgrade: false },
-      { id: "c2", company: "加德士", day: "特別 2", promo: "專屬活動減 $7.5/L", disc: 7.50, freeUpgrade: false },
-      { id: "c3", company: "加德士", day: "星期一", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false },
-      { id: "c4", company: "加德士", day: "星期二", promo: "免費升級 (升V-Power)", disc: 1.80, freeUpgrade: true },
-      { id: "c5", company: "加德士", day: "星期三", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false },
-      { id: "c6", company: "加德士", day: "星期四", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false },
-      { id: "c7", company: "加德士", day: "星期五", promo: "免費升級 (升V-Power)", disc: 1.80, freeUpgrade: true },
-      { id: "c8", company: "加德士", day: "星期六", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false },
-      { id: "c9", company: "加德士", day: "星期日", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false }
+      { id: "c1", company: "加德士", day: "特別 1", promo: "JoyFuel 卡直減 $8.0/L", disc: 8.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "c2", company: "加德士", day: "特別 2", promo: "專屬活動減 $7.5/L", disc: 7.50, freeUpgrade: false, ptsMult: 1 },
+      { id: "c3", company: "加德士", day: "星期一", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "c4", company: "加德士", day: "星期二", promo: "免費升級 (升V-Power)", disc: 1.80, freeUpgrade: true, ptsMult: 1 },
+      { id: "c5", company: "加德士", day: "星期三", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false, ptsMult: 1 },
+      { id: "c6", company: "加德士", day: "星期四", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "c7", company: "加德士", day: "星期五", promo: "免費升級 (升V-Power)", disc: 1.80, freeUpgrade: true, ptsMult: 1 },
+      { id: "c8", company: "加德士", day: "星期六", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false, ptsMult: 1 },
+      { id: "c9", company: "加德士", day: "星期日", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false, ptsMult: 1 }
     ];
 
     let shellPromos = [
-      { id: "s1", company: "Shell", day: "特別 1", promo: "免費升級 + 直減 $7.6/L", disc: 7.60, freeUpgrade: true },
-      { id: "s2", company: "Shell", day: "特別 2", promo: "特別推廣減 $7.0/L", disc: 7.00, freeUpgrade: false },
-      { id: "s3", company: "Shell", day: "星期一", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false },
-      { id: "s4", company: "Shell", day: "星期二", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false },
-      { id: "s5", company: "Shell", day: "星期三", promo: "免費升級", disc: 7.00, freeUpgrade: true },
-      { id: "s6", company: "Shell", day: "星期四", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false },
-      { id: "s7", company: "Shell", day: "星期五", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false },
-      { id: "s8", company: "Shell", day: "星期六", promo: "直減 $7.0/L (3x積分)", disc: 7.00, freeUpgrade: false },
-      { id: "s9", company: "Shell", day: "星期日", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false }
+      { id: "s1", company: "Shell", day: "特別 1", promo: "免費升級 + 直減 $7.6/L (3x分)", disc: 7.60, freeUpgrade: true, ptsMult: 3 },
+      { id: "s2", company: "Shell", day: "特別 2", promo: "特別推廣減 $7.0/L", disc: 7.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "s3", company: "Shell", day: "星期一", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "s4", company: "Shell", day: "星期二", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "s5", company: "Shell", day: "星期三", promo: "免費升級", disc: 7.00, freeUpgrade: true, ptsMult: 1 },
+      { id: "s6", company: "Shell", day: "星期四", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "s7", company: "Shell", day: "星期五", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false, ptsMult: 1 },
+      { id: "s8", company: "Shell", day: "星期六", promo: "直減 $7.0/L (3x積分)", disc: 7.00, freeUpgrade: false, ptsMult: 3 },
+      { id: "s9", company: "Shell", day: "星期日", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false, ptsMult: 1 }
     ];
 
     let essoPromos = [
-      { id: "e1", company: "Esso", day: "特別 1", promo: "滿$500送$200油券", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: false },
-      { id: "e2", company: "Esso", day: "特別 2", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: true },
-      { id: "e3", company: "Esso", day: "星期一", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false },
-      { id: "e4", company: "Esso", day: "星期二", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
-      { id: "e5", company: "Esso", day: "星期三", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false },
-      { id: "e6", company: "Esso", day: "星期四", promo: "免費升級", disc: 1.60, gift: 0, ptsRedeemed: 0, freeUpgrade: true },
-      { id: "e7", company: "Esso", day: "星期五", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
-      { id: "e8", company: "Esso", day: "星期六", promo: "Mastercard減$8/L", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false },
-      { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false }
+      { id: "e1", company: "Esso", day: "特別 1", promo: "滿$500送$200油券", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 1 },
+      { id: "e2", company: "Esso", day: "特別 2", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: true, ptsMult: 1 },
+      { id: "e3", company: "Esso", day: "星期一", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false, ptsMult: 1 },
+      { id: "e4", company: "Esso", day: "星期二", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 1 },
+      { id: "e5", company: "Esso", day: "星期三", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false, ptsMult: 1 },
+      { id: "e6", company: "Esso", day: "星期四", promo: "免費升級", disc: 1.60, gift: 0, ptsRedeemed: 0, freeUpgrade: true, ptsMult: 1 },
+      { id: "e7", company: "Esso", day: "星期五", promo: "直減 $8.5/L", disc: 8.50, gift: 0, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 1 },
+      { id: "e8", company: "Esso", day: "星期六", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 2 },
+      { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 2 }
     ];
 
     function calcItem(item, pPremium, pStandard) {
       let disc = item.disc || 0;
       let giftedAmount = item.gift || 0;
       let ptsRedeemed = item.ptsRedeemed || 0;
+      let ptsMult = item.ptsMult || 1;
 
       let volPaid = fixedSpending / Math.max(0.1, pPremium - disc);
       let volGift = 0;
@@ -530,10 +568,25 @@
       }
 
       let totalVol = volPaid + volGift;
-      let ptsValue = (ptsRedeemed / 1000) * 33.33;
+      let ptsValueUsed = (ptsRedeemed / 1000) * 33.33;
 
-      let finalPriceL = (fixedSpending + ptsValue) / totalVol;
-      return { priceNum: finalPriceL, priceStr: finalPriceL.toFixed(2), discStr: (pPremium - finalPriceL).toFixed(2) };
+      // 1. 純折後單價
+      let finalPriceL = (fixedSpending + ptsValueUsed) / totalVol;
+
+      // 2. 賺取積分計算 (以基本 15 分/升計)
+      let ptsEarned = volPaid * 15 * ptsMult;
+      let ptsEarnedVal = (ptsEarned / 1000) * 33.33; // 折算禮券價值
+
+      // 3. 連積分折後單價 (扣除賺取的積分回贈)
+      let finalPtsPriceL = (fixedSpending + ptsValueUsed - ptsEarnedVal) / totalVol;
+
+      return {
+        priceNum: finalPriceL,
+        priceStr: finalPriceL.toFixed(2),
+        ptsPriceNum: finalPtsPriceL,
+        ptsPriceStr: finalPtsPriceL.toFixed(2),
+        discStr: (pPremium - finalPriceL).toFixed(2)
+      };
     }
 
     function toggleEditMode(brandKey) {
@@ -562,6 +615,7 @@
       document.getElementById("modalPromo").value = item.promo;
       document.getElementById("modalDisc").value = item.disc;
       document.getElementById("modalFreeUpgrade").checked = item.freeUpgrade || false;
+      document.getElementById("modalPtsMult").value = item.ptsMult || 1;
 
       const groupGift = document.getElementById("groupGift");
       if (brandKey === "esso") {
@@ -590,6 +644,7 @@
         item.promo = document.getElementById("modalPromo").value;
         item.disc = parseFloat(document.getElementById("modalDisc").value) || 0;
         item.freeUpgrade = document.getElementById("modalFreeUpgrade").checked;
+        item.ptsMult = parseFloat(document.getElementById("modalPtsMult").value) || 1;
         if (brandKey === "esso") {
           item.gift = parseFloat(document.getElementById("modalGift").value) || 0;
         }
@@ -617,13 +672,13 @@
           <td class="day">${item.day} ${editable ? "✏️" : ""}</td>
           <td class="promo">${item.promo}</td>
           <td class="price">$${res.priceStr}</td>
+          <td class="pts-price">$${res.ptsPriceStr}</td>
           <td class="disc">-$${res.discStr}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    /* 最平 3 位方案：左中右 3 欄並排渲染 */
     function updateTop3(allPromosWithPrices) {
       let calculatedList = [];
 
@@ -635,7 +690,8 @@
             day: item.day,
             promo: item.promo,
             priceNum: res.priceNum,
-            priceStr: res.priceStr
+            priceStr: res.priceStr,
+            ptsPriceStr: res.ptsPriceStr
           });
         });
       });
@@ -659,7 +715,10 @@
             <div class="top3-day">${item.day}</div>
             <div class="top3-promo">${item.promo}</div>
           </div>
-          <div class="top3-price">$${item.priceStr}/L</div>
+          <div>
+            <div class="top3-price">$${item.priceStr}/L</div>
+            <div class="top3-pts-price">連分:$${item.ptsPriceStr}</div>
+          </div>
         `;
         top3Container.appendChild(div);
       });
@@ -710,7 +769,6 @@
         const day = String(now.getDate()).padStart(2, '0');
         document.getElementById("versionDate").innerText = `${year}${month}${day}`;
 
-        // 個別提取不同油站的油價 (若消委會 API 有劃分)
         let pPrices = [], sPrices = [];
         if (Array.isArray(data)) {
           data.forEach(item => {
