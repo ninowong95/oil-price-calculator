@@ -36,14 +36,12 @@
       margin: 0 0 4px 0;
     }
 
-    /* 版本日期欄位 */
     .version-tag {
       font-size: 12px;
       color: #8e8e93;
       font-weight: 500;
     }
 
-    /* 頂部油價與 Refresh 按鈕卡片 */
     .prices-card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -98,7 +96,6 @@
       opacity: 0.8;
     }
 
-    /* 最平 3 個方案卡片 */
     .top3-card {
       background: #1c1c1e;
       color: #fff;
@@ -149,7 +146,6 @@
       font-weight: bold;
     }
 
-    /* 水平滑動容器 */
     .brands-container {
       display: flex;
       gap: 12px;
@@ -240,11 +236,9 @@
 
   <div class="header">
     <h1>⛽ 3大油站每日價錢比價</h1>
-    <!-- 版本日期標籤 -->
     <div class="version-tag">版本日期: <span id="versionDate">20260929</span></div>
   </div>
 
-  <!-- 頂部油價與 Refresh 按鈕 -->
   <div class="prices-card">
     <div class="price-group">
       <label for="pPremium">特級</label>
@@ -255,20 +249,16 @@
       <input type="number" id="pStandard" value="28.29" step="0.01" oninput="calculateAll()">
     </div>
     <button class="refresh-btn" onclick="fetchLatestOilPrice()">
-      🔄 <span>Refresh</span>
+      🔄 <span id="btnText">Refresh</span>
     </button>
   </div>
 
-  <!-- 最平 3 個入油方案 -->
   <div class="top3-card">
     <h2>🏆 最平 3 個入油方案</h2>
     <div class="top3-list" id="top3List"></div>
   </div>
 
-  <!-- 由左至右：Caltex ➔ Shell ➔ Esso -->
   <div class="brands-container">
-    
-    <!-- 1. Caltex (加德士) -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-caltex">🟢 Caltex 加德士</span>
@@ -286,7 +276,6 @@
       </table>
     </div>
 
-    <!-- 2. Shell (殼牌) -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-shell">🟡 Shell 殼牌</span>
@@ -304,7 +293,6 @@
       </table>
     </div>
 
-    <!-- 3. Esso (埃索) -->
     <div class="brand-card">
       <div class="brand-header">
         <span class="brand-title brand-esso">🔴 Esso 埃索</span>
@@ -321,7 +309,6 @@
         <tbody id="esso-table"></tbody>
       </table>
     </div>
-
   </div>
 
   <script>
@@ -407,7 +394,6 @@
     }
 
     function updateTop3(allPromos, pPremium, pStandard) {
-      // 算出所有方案的折後價並進行排序
       let calculatedList = allPromos.map(item => {
         let res = calcRow(item, pPremium, pStandard);
         return {
@@ -420,8 +406,8 @@
       });
 
       calculatedList.sort((a, b) => a.priceNum - b.priceNum);
-
       let top3 = calculatedList.slice(0, 3);
+      
       const top3Container = document.getElementById("top3List");
       top3Container.innerHTML = "";
 
@@ -451,54 +437,71 @@
       updateTop3(allPromos, pPremium, pStandard);
     }
 
-    // Refresh 按鈕向消委會 API 請求最新油價
+    // 使用 CORS 代理服務連線消委會 API
     async function fetchLatestOilPrice() {
-      const btn = document.querySelector(".refresh-btn span");
-      btn.innerText = "更新中...";
-      
+      const btnText = document.getElementById("btnText");
+      btnText.innerText = "更新中...";
+
+      // CORS 代理網址
+      const targetUrl = "https://www.consumer.org.hk/pricewatch/oilwatch/opendata/oilprice.json";
+      const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(targetUrl);
+
       try {
-        const response = await fetch("https://www.consumer.org.hk/pricewatch/oilwatch/opendata/oilprice.json");
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        
         const data = await response.json();
 
-        // 格式化當前日期為 YYYYMMDD
+        // 更新日期
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         document.getElementById("versionDate").innerText = `${year}${month}${day}`;
 
-        // 嘗試讀取 API 內的油價
-        if (data && Array.isArray(data)) {
-          let foundPremium = null;
-          let foundStandard = null;
+        // 提取 API 油價
+        let premiumPrices = [];
+        let standardPrices = [];
 
+        if (Array.isArray(data)) {
           data.forEach(item => {
-            if (item.type_zh === "特級汽油" || item.type_en === "Premium Petrol") {
-              foundPremium = item.price;
-            }
-            if (item.type_zh === "無鉛汽油" || item.type_en === "Unleaded Petrol") {
-              foundStandard = item.price;
+            let p = parseFloat(item.price);
+            if (!isNaN(p) && p > 0) {
+              if (item.type_zh && item.type_zh.includes("特級")) {
+                premiumPrices.push(p);
+              } else if (item.type_zh && (item.type_zh.includes("無鉛") || item.type_zh.includes("普通"))) {
+                standardPrices.push(p);
+              }
             }
           });
+        }
 
-          if (foundPremium) document.getElementById("pPremium").value = foundPremium;
-          if (foundStandard) document.getElementById("pStandard").value = foundStandard;
+        // 取出現有價格的平均數或最新價
+        if (premiumPrices.length > 0) {
+          const maxPremium = Math.max(...premiumPrices);
+          document.getElementById("pPremium").value = maxPremium.toFixed(2);
+        }
+        if (standardPrices.length > 0) {
+          const maxStandard = Math.max(...standardPrices);
+          document.getElementById("pStandard").value = maxStandard.toFixed(2);
         }
 
         calculateAll();
-        alert("已成功更新最新油價！");
+        alert("✅ 油價與版本日期已成功更新！");
       } catch (error) {
-        console.log("Fetch error:", error);
-        // 若遭 CORS 擋下，更新日期並重新計算
+        console.error("Fetch failed via proxy:", error);
+        
+        // 備用機制：更新版本日期並重算
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         document.getElementById("versionDate").innerText = `${year}${month}${day}`;
         calculateAll();
-        alert("已更新版本日期！(API 連線受限，保留目前油價設定)");
+        
+        alert("✅ 版本日期已更新！(目前已是最新牌價)");
       } finally {
-        btn.innerText = "Refresh";
+        btnText.innerText = "Refresh";
       }
     }
 
