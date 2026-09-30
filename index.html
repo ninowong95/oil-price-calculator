@@ -370,7 +370,6 @@
       font-weight: 600;
     }
 
-    /* 歷史紀錄列表 */
     .history-item {
       background: #f8f9fa;
       border-radius: 8px;
@@ -424,8 +423,8 @@
         <button class="edit-btn" id="btn-edit-caltex" onclick="toggleEditMode('caltex')">✏️ Edit</button>
       </div>
       <div class="company-price-box">
-        <div><label>特級</label> <input type="number" id="caltex-pPremium" value="30.09" step="0.01" oninput="calculateAll()"></div>
-        <div><label>普通</label> <input type="number" id="caltex-pStandard" value="28.29" step="0.01" oninput="calculateAll()"></div>
+        <div><label>特級</label> <input type="number" id="caltex-pPremium" value="30.09" step="0.01" oninput="onOilPriceChange()"></div>
+        <div><label>普通</label> <input type="number" id="caltex-pStandard" value="28.29" step="0.01" oninput="onOilPriceChange()"></div>
       </div>
       <table>
         <thead>
@@ -451,8 +450,8 @@
         <button class="edit-btn" id="btn-edit-shell" onclick="toggleEditMode('shell')">✏️ Edit</button>
       </div>
       <div class="company-price-box">
-        <div><label>特級</label> <input type="number" id="shell-pPremium" value="30.09" step="0.01" oninput="calculateAll()"></div>
-        <div><label>普通</label> <input type="number" id="shell-pStandard" value="28.29" step="0.01" oninput="calculateAll()"></div>
+        <div><label>特級</label> <input type="number" id="shell-pPremium" value="30.09" step="0.01" oninput="onOilPriceChange()"></div>
+        <div><label>普通</label> <input type="number" id="shell-pStandard" value="28.29" step="0.01" oninput="onOilPriceChange()"></div>
       </div>
       <table>
         <thead>
@@ -478,8 +477,8 @@
         <button class="edit-btn" id="btn-edit-esso" onclick="toggleEditMode('esso')">✏️ Edit</button>
       </div>
       <div class="company-price-box">
-        <div><label>特級</label> <input type="number" id="esso-pPremium" value="30.09" step="0.01" oninput="calculateAll()"></div>
-        <div><label>普通</label> <input type="number" id="esso-pStandard" value="28.29" step="0.01" oninput="calculateAll()"></div>
+        <div><label>特級</label> <input type="number" id="esso-pPremium" value="30.09" step="0.01" oninput="onOilPriceChange()"></div>
+        <div><label>普通</label> <input type="number" id="esso-pStandard" value="28.29" step="0.01" oninput="onOilPriceChange()"></div>
       </div>
       <table>
         <thead>
@@ -547,7 +546,7 @@
       <h3>📜 歷史修改紀錄與版本備份</h3>
       
       <div style="margin-bottom: 12px; display:flex; gap:8px;">
-        <button class="btn-save" style="flex:1; font-size:12px;" onclick="createBackupSnap()">💾 備份當前方案</button>
+        <button class="btn-save" style="flex:1; font-size:12px;" onclick="createBackupSnap()">💾 備份當前方案與油價</button>
         <button class="btn-danger" onclick="resetToDefaults()">↺ 重置為預設</button>
       </div>
 
@@ -600,16 +599,61 @@
       { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 2 }
     ];
 
+    const defaultOilPrices = {
+      caltex: { pPremium: "30.09", pStandard: "28.29" },
+      shell: { pPremium: "30.09", pStandard: "28.29" },
+      esso: { pPremium: "30.09", pStandard: "28.29" }
+    };
+
     // 初始化載入數據
     let caltexPromos = JSON.parse(localStorage.getItem("caltexPromos")) || defaultCaltex;
     let shellPromos = JSON.parse(localStorage.getItem("shellPromos")) || defaultShell;
     let essoPromos = JSON.parse(localStorage.getItem("essoPromos")) || defaultEsso;
+    let savedOilPrices = JSON.parse(localStorage.getItem("savedOilPrices")) || defaultOilPrices;
     let historySnapshots = JSON.parse(localStorage.getItem("oilHistorySnapshots")) || [];
 
+    // 將優惠方案與當前輸入的油價一同持久化保存至 localStorage
     function saveToLocalStorage() {
       localStorage.setItem("caltexPromos", JSON.stringify(caltexPromos));
       localStorage.setItem("shellPromos", JSON.stringify(shellPromos));
       localStorage.setItem("essoPromos", JSON.stringify(essoPromos));
+
+      const currentPrices = {
+        caltex: {
+          pPremium: document.getElementById("caltex-pPremium").value,
+          pStandard: document.getElementById("caltex-pStandard").value
+        },
+        shell: {
+          pPremium: document.getElementById("shell-pPremium").value,
+          pStandard: document.getElementById("shell-pStandard").value
+        },
+        esso: {
+          pPremium: document.getElementById("esso-pPremium").value,
+          pStandard: document.getElementById("esso-pStandard").value
+        }
+      };
+      localStorage.setItem("savedOilPrices", JSON.stringify(currentPrices));
+    }
+
+    // 載入 localStorage 保存的油價至 UI
+    function loadSavedOilPricesUI() {
+      if (savedOilPrices.caltex) {
+        document.getElementById("caltex-pPremium").value = savedOilPrices.caltex.pPremium;
+        document.getElementById("caltex-pStandard").value = savedOilPrices.caltex.pStandard;
+      }
+      if (savedOilPrices.shell) {
+        document.getElementById("shell-pPremium").value = savedOilPrices.shell.pPremium;
+        document.getElementById("shell-pStandard").value = savedOilPrices.shell.pStandard;
+      }
+      if (savedOilPrices.esso) {
+        document.getElementById("esso-pPremium").value = savedOilPrices.esso.pPremium;
+        document.getElementById("esso-pStandard").value = savedOilPrices.esso.pStandard;
+      }
+    }
+
+    function onOilPriceChange() {
+      saveToLocalStorage();
+      calculateAll();
     }
 
     function calcItem(item, pPremium, pStandard) {
@@ -650,7 +694,7 @@
         btn.innerText = "Done";
         btn.classList.add("active");
       } else {
-        btn.innerText = "✏️️ Edit";
+        btn.innerText = "✏️ Edit";
         btn.classList.remove("active");
       }
       calculateAll();
@@ -713,7 +757,7 @@
       calculateAll();
     }
 
-    /* 歷史快照備份與恢復功能 */
+    /* 歷史快照備份與恢復功能 (包含油價) */
     function openHistoryModal() {
       renderHistoryList();
       openModal("historyModal");
@@ -723,44 +767,67 @@
       const now = new Date();
       const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
       
+      const currentPrices = {
+        caltex: {
+          pPremium: document.getElementById("caltex-pPremium").value,
+          pStandard: document.getElementById("caltex-pStandard").value
+        },
+        shell: {
+          pPremium: document.getElementById("shell-pPremium").value,
+          pStandard: document.getElementById("shell-pStandard").value
+        },
+        esso: {
+          pPremium: document.getElementById("esso-pPremium").value,
+          pStandard: document.getElementById("esso-pStandard").value
+        }
+      };
+
       const snap = {
         id: Date.now(),
         time: timeStr,
+        prices: currentPrices,
         caltex: JSON.parse(JSON.stringify(caltexPromos)),
         shell: JSON.parse(JSON.stringify(shellPromos)),
         esso: JSON.parse(JSON.stringify(essoPromos))
       };
 
       historySnapshots.unshift(snap);
-      if (historySnapshots.length > 10) historySnapshots.pop(); // 保留最新10個備份
+      if (historySnapshots.length > 10) historySnapshots.pop();
 
       localStorage.setItem("oilHistorySnapshots", JSON.stringify(historySnapshots));
       renderHistoryList();
-      alert("✅ 已成功備份當前方案！");
+      alert("✅ 已成功備份當前優惠方案與各站油價！");
     }
 
     function restoreSnapshot(snapId) {
       const snap = historySnapshots.find(x => x.id === snapId);
       if (!snap) return;
 
-      if (confirm(`確定要還原至 ${snap.time} 的備份方案嗎？`)) {
+      if (confirm(`確定要還原至 ${snap.time} 的備份方案與油價嗎？`)) {
         caltexPromos = JSON.parse(JSON.stringify(snap.caltex));
         shellPromos = JSON.parse(JSON.stringify(snap.shell));
         essoPromos = JSON.parse(JSON.stringify(snap.esso));
 
+        if (snap.prices) {
+          savedOilPrices = JSON.parse(JSON.stringify(snap.prices));
+          loadSavedOilPricesUI();
+        }
+
         saveToLocalStorage();
         calculateAll();
         closeModal("historyModal");
-        alert("✅ 已還原歷史備份方案！");
+        alert("✅ 已還原歷史備份方案與油價！");
       }
     }
 
     function resetToDefaults() {
-      if (confirm("確定要把所有優惠方案恢復為初始預設值嗎？")) {
+      if (confirm("確定要把所有優惠方案與油價恢復為初始預設值嗎？")) {
         caltexPromos = JSON.parse(JSON.stringify(defaultCaltex));
         shellPromos = JSON.parse(JSON.stringify(defaultShell));
         essoPromos = JSON.parse(JSON.stringify(defaultEsso));
+        savedOilPrices = JSON.parse(JSON.stringify(defaultOilPrices));
 
+        loadSavedOilPricesUI();
         saveToLocalStorage();
         calculateAll();
         closeModal("historyModal");
@@ -783,7 +850,7 @@
         div.innerHTML = `
           <div class="history-info">
             <div class="history-time">📅 ${snap.time}</div>
-            <div style="color:#666;">快照備份 (3大油站完整數據)</div>
+            <div style="color:#666;">備份 (含特級/普通油價與3大油站方案)</div>
           </div>
           <button class="btn-save" style="font-size:11px; padding:4px 8px;" onclick="restoreSnapshot(${snap.id})">↩️ 恢復</button>
         `;
@@ -927,6 +994,7 @@
           document.getElementById("esso-pStandard").value = maxS;
         }
 
+        saveToLocalStorage();
         calculateAll();
         alert("✅ 各油站牌價與版本日期已成功更新！");
       } catch (error) {
@@ -935,6 +1003,7 @@
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         document.getElementById("versionDate").innerText = `${year}${month}${day}`;
+        saveToLocalStorage();
         calculateAll();
         alert("✅ 版本日期已更新！(目前已是最新牌價)");
       } finally {
@@ -942,6 +1011,8 @@
       }
     }
 
+    // 啟動頁面時載入 UI
+    loadSavedOilPricesUI();
     calculateAll();
   </script>
 </body>
