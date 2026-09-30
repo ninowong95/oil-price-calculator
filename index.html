@@ -267,9 +267,9 @@
     td.promo { font-size: 11px; color: #555; text-align: left; }
     td.price { font-weight: bold; color: #30d158; }
     td.pts-price { font-weight: bold; color: #d6a100; }
-    td.disc { color: #ff9500; font-size: 11px; }
+    td.disc { color: #ff9500; font-weight: bold; font-size: 11px; }
 
-    /* Modal 彈窗 */
+    /* Modal 彈窗通用 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -288,10 +288,12 @@
     .modal {
       background: #fff;
       width: 90%;
-      max-width: 360px;
+      max-width: 380px;
       border-radius: 14px;
       padding: 18px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .modal h3 {
@@ -333,7 +335,7 @@
 
     .modal-buttons {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       justify-content: flex-end;
       margin-top: 16px;
     }
@@ -357,6 +359,37 @@
       font-size: 13px;
       font-weight: 600;
     }
+
+    .btn-danger {
+      background: #ff3b30;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 歷史紀錄列表 */
+    .history-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-info {
+      font-size: 12px;
+    }
+
+    .history-time {
+      font-weight: bold;
+      color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -366,8 +399,8 @@
   </div>
 
   <div class="top-bar">
-    <button class="top-bar-btn" onclick="openHistoryModal()">📜 歷史油價</button>
-    <div class="version-tag"><span id="versionDate">20260929</span></div>
+    <button class="top-bar-btn" onclick="openHistoryModal()">📜 歷史紀錄</button>
+    <div class="version-tag"><span id="versionDate">20261001</span></div>
     <button class="top-bar-btn primary" onclick="fetchLatestOilPrice()">
       🔄 <span id="btnText">Refresh</span>
     </button>
@@ -385,7 +418,6 @@
     <div class="brand-card">
       <div class="brand-header">
         <div class="brand-title-box">
-          <!-- Caltex Logo/Icon -->
           <span class="brand-icon icon-caltex">★</span>
           <span class="brand-title brand-caltex">Caltex 加德士</span>
         </div>
@@ -400,9 +432,9 @@
           <tr>
             <th style="width:20%; text-align:left;">日/活動</th>
             <th style="width:34%; text-align:left;">優惠方案</th>
-            <th style="width:16%;">折後/L</th>
-            <th style="width:16%;">連積分/L</th>
-            <th style="width:14%;">每升減</th>
+            <th style="width:15%;">折後/L</th>
+            <th style="width:15%;">連積分/L</th>
+            <th style="width:16%;">連分總減</th>
           </tr>
         </thead>
         <tbody id="caltex-table"></tbody>
@@ -413,7 +445,6 @@
     <div class="brand-card">
       <div class="brand-header">
         <div class="brand-title-box">
-          <!-- Shell Logo/Icon -->
           <span class="brand-icon icon-shell">🐚</span>
           <span class="brand-title brand-shell">Shell 殼牌</span>
         </div>
@@ -428,9 +459,9 @@
           <tr>
             <th style="width:20%; text-align:left;">日/活動</th>
             <th style="width:34%; text-align:left;">優惠方案</th>
-            <th style="width:16%;">折後/L</th>
-            <th style="width:16%;">連積分/L</th>
-            <th style="width:14%;">每升減</th>
+            <th style="width:15%;">折後/L</th>
+            <th style="width:15%;">連積分/L</th>
+            <th style="width:16%;">連分總減</th>
           </tr>
         </thead>
         <tbody id="shell-table"></tbody>
@@ -441,7 +472,6 @@
     <div class="brand-card">
       <div class="brand-header">
         <div class="brand-title-box">
-          <!-- Esso Logo/Icon -->
           <span class="brand-icon icon-esso">E</span>
           <span class="brand-title brand-esso">Esso 埃索</span>
         </div>
@@ -456,9 +486,9 @@
           <tr>
             <th style="width:20%; text-align:left;">日/活動</th>
             <th style="width:34%; text-align:left;">優惠方案</th>
-            <th style="width:16%;">折後/L</th>
-            <th style="width:16%;">連積分/L</th>
-            <th style="width:14%;">每升減</th>
+            <th style="width:15%;">折後/L</th>
+            <th style="width:15%;">連積分/L</th>
+            <th style="width:16%;">連分總減</th>
           </tr>
         </thead>
         <tbody id="esso-table"></tbody>
@@ -467,7 +497,7 @@
 
   </div>
 
-  <!-- Modal 編輯視窗 -->
+  <!-- Modal 1: 編輯方案 Modal -->
   <div class="modal-overlay" id="editModal">
     <div class="modal">
       <h3 id="modalTitle">修改優惠方案</h3>
@@ -505,8 +535,26 @@
       </div>
 
       <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-cancel" onclick="closeModal('editModal')">取消</button>
         <button class="btn-save" onclick="saveModalData()">儲存更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 歷史紀錄與版本控制 Modal -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal">
+      <h3>📜 歷史修改紀錄與版本備份</h3>
+      
+      <div style="margin-bottom: 12px; display:flex; gap:8px;">
+        <button class="btn-save" style="flex:1; font-size:12px;" onclick="createBackupSnap()">💾 備份當前方案</button>
+        <button class="btn-danger" onclick="resetToDefaults()">↺ 重置為預設</button>
+      </div>
+
+      <div id="historyListContainer"></div>
+
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal('historyModal')">關閉</button>
       </div>
     </div>
   </div>
@@ -515,7 +563,8 @@
     const fixedSpending = 500;
     const isEditing = { caltex: false, shell: false, esso: false };
 
-    let caltexPromos = [
+    // 初始預設資料
+    const defaultCaltex = [
       { id: "c1", company: "加德士", day: "特別 1", promo: "JoyFuel 卡直減 $8.0/L", disc: 8.00, freeUpgrade: false, ptsMult: 1 },
       { id: "c2", company: "加德士", day: "特別 2", promo: "專屬活動減 $7.5/L", disc: 7.50, freeUpgrade: false, ptsMult: 1 },
       { id: "c3", company: "加德士", day: "星期一", promo: "直減 $6.0/L", disc: 6.00, freeUpgrade: false, ptsMult: 1 },
@@ -527,7 +576,7 @@
       { id: "c9", company: "加德士", day: "星期日", promo: "直減 $7.2/L", disc: 7.20, freeUpgrade: false, ptsMult: 1 }
     ];
 
-    let shellPromos = [
+    const defaultShell = [
       { id: "s1", company: "Shell", day: "特別 1", promo: "免費升級 + 直減 $7.6/L (3x分)", disc: 7.60, freeUpgrade: true, ptsMult: 3 },
       { id: "s2", company: "Shell", day: "特別 2", promo: "特別推廣減 $7.0/L", disc: 7.00, freeUpgrade: false, ptsMult: 1 },
       { id: "s3", company: "Shell", day: "星期一", promo: "直減 $5.0/L", disc: 5.00, freeUpgrade: false, ptsMult: 1 },
@@ -539,7 +588,7 @@
       { id: "s9", company: "Shell", day: "星期日", promo: "直減 $7.0/L", disc: 7.00, freeUpgrade: false, ptsMult: 1 }
     ];
 
-    let essoPromos = [
+    const defaultEsso = [
       { id: "e1", company: "Esso", day: "特別 1", promo: "滿$500送$200油券", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 1 },
       { id: "e2", company: "Esso", day: "特別 2", promo: "滿$500送$200免費升級", disc: 1.60, gift: 200, ptsRedeemed: 0, freeUpgrade: true, ptsMult: 1 },
       { id: "e3", company: "Esso", day: "星期一", promo: "1000分換$268油", disc: 1.60, gift: 268, ptsRedeemed: 1000, freeUpgrade: false, ptsMult: 1 },
@@ -551,6 +600,18 @@
       { id: "e9", company: "Esso", day: "星期日", promo: "Mastercard減$8/L (2x分)", disc: 9.80, gift: 0, ptsRedeemed: 0, freeUpgrade: false, ptsMult: 2 }
     ];
 
+    // 初始化載入數據
+    let caltexPromos = JSON.parse(localStorage.getItem("caltexPromos")) || defaultCaltex;
+    let shellPromos = JSON.parse(localStorage.getItem("shellPromos")) || defaultShell;
+    let essoPromos = JSON.parse(localStorage.getItem("essoPromos")) || defaultEsso;
+    let historySnapshots = JSON.parse(localStorage.getItem("oilHistorySnapshots")) || [];
+
+    function saveToLocalStorage() {
+      localStorage.setItem("caltexPromos", JSON.stringify(caltexPromos));
+      localStorage.setItem("shellPromos", JSON.stringify(shellPromos));
+      localStorage.setItem("essoPromos", JSON.stringify(essoPromos));
+    }
+
     function calcItem(item, pPremium, pStandard) {
       let disc = item.disc || 0;
       let giftedAmount = item.gift || 0;
@@ -560,32 +621,25 @@
       let volPaid = fixedSpending / Math.max(0.1, pPremium - disc);
       let volGift = 0;
 
-      if (giftedAmount > 0) {
-        volGift = giftedAmount / pStandard;
-      }
-      if (item.freeUpgrade) {
-        volGift += volPaid * ((pPremium - pStandard) / pStandard);
-      }
+      if (giftedAmount > 0) volGift = giftedAmount / pStandard;
+      if (item.freeUpgrade) volGift += volPaid * ((pPremium - pStandard) / pStandard);
 
       let totalVol = volPaid + volGift;
       let ptsValueUsed = (ptsRedeemed / 1000) * 33.33;
 
-      // 1. 純折後單價
       let finalPriceL = (fixedSpending + ptsValueUsed) / totalVol;
-
-      // 2. 賺取積分計算 (以基本 15 分/升計)
       let ptsEarned = volPaid * 15 * ptsMult;
-      let ptsEarnedVal = (ptsEarned / 1000) * 33.33; // 折算禮券價值
+      let ptsEarnedVal = (ptsEarned / 1000) * 33.33;
 
-      // 3. 連積分折後單價 (扣除賺取的積分回贈)
       let finalPtsPriceL = (fixedSpending + ptsValueUsed - ptsEarnedVal) / totalVol;
+      let ptsTotalDiscountL = pPremium - finalPtsPriceL;
 
       return {
         priceNum: finalPriceL,
         priceStr: finalPriceL.toFixed(2),
         ptsPriceNum: finalPtsPriceL,
         ptsPriceStr: finalPtsPriceL.toFixed(2),
-        discStr: (pPremium - finalPriceL).toFixed(2)
+        ptsDiscStr: ptsTotalDiscountL.toFixed(2)
       };
     }
 
@@ -596,13 +650,21 @@
         btn.innerText = "Done";
         btn.classList.add("active");
       } else {
-        btn.innerText = "✏️ Edit";
+        btn.innerText = "✏️️ Edit";
         btn.classList.remove("active");
       }
       calculateAll();
     }
 
-    function openModal(brandKey, itemId) {
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add("open");
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove("open");
+    }
+
+    function openEditRowModal(brandKey, itemId) {
       if (!isEditing[brandKey]) return;
 
       let list = brandKey === 'caltex' ? caltexPromos : (brandKey === 'shell' ? shellPromos : essoPromos);
@@ -625,11 +687,7 @@
         groupGift.style.display = "none";
       }
 
-      document.getElementById("editModal").classList.add("open");
-    }
-
-    function closeModal() {
-      document.getElementById("editModal").classList.remove("open");
+      openModal("editModal");
     }
 
     function saveModalData() {
@@ -650,8 +708,87 @@
         }
       }
 
-      closeModal();
+      saveToLocalStorage();
+      closeModal('editModal');
       calculateAll();
+    }
+
+    /* 歷史快照備份與恢復功能 */
+    function openHistoryModal() {
+      renderHistoryList();
+      openModal("historyModal");
+    }
+
+    function createBackupSnap() {
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      
+      const snap = {
+        id: Date.now(),
+        time: timeStr,
+        caltex: JSON.parse(JSON.stringify(caltexPromos)),
+        shell: JSON.parse(JSON.stringify(shellPromos)),
+        esso: JSON.parse(JSON.stringify(essoPromos))
+      };
+
+      historySnapshots.unshift(snap);
+      if (historySnapshots.length > 10) historySnapshots.pop(); // 保留最新10個備份
+
+      localStorage.setItem("oilHistorySnapshots", JSON.stringify(historySnapshots));
+      renderHistoryList();
+      alert("✅ 已成功備份當前方案！");
+    }
+
+    function restoreSnapshot(snapId) {
+      const snap = historySnapshots.find(x => x.id === snapId);
+      if (!snap) return;
+
+      if (confirm(`確定要還原至 ${snap.time} 的備份方案嗎？`)) {
+        caltexPromos = JSON.parse(JSON.stringify(snap.caltex));
+        shellPromos = JSON.parse(JSON.stringify(snap.shell));
+        essoPromos = JSON.parse(JSON.stringify(snap.esso));
+
+        saveToLocalStorage();
+        calculateAll();
+        closeModal("historyModal");
+        alert("✅ 已還原歷史備份方案！");
+      }
+    }
+
+    function resetToDefaults() {
+      if (confirm("確定要把所有優惠方案恢復為初始預設值嗎？")) {
+        caltexPromos = JSON.parse(JSON.stringify(defaultCaltex));
+        shellPromos = JSON.parse(JSON.stringify(defaultShell));
+        essoPromos = JSON.parse(JSON.stringify(defaultEsso));
+
+        saveToLocalStorage();
+        calculateAll();
+        closeModal("historyModal");
+        alert("✅ 已恢復初始預設值！");
+      }
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById("historyListContainer");
+      container.innerHTML = "";
+
+      if (historySnapshots.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:#8e8e93; font-size:12px; padding:12px;">尚無歷史快照，點擊上方按鈕備份。</div>`;
+        return;
+      }
+
+      historySnapshots.forEach(snap => {
+        let div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="history-info">
+            <div class="history-time">📅 ${snap.time}</div>
+            <div style="color:#666;">快照備份 (3大油站完整數據)</div>
+          </div>
+          <button class="btn-save" style="font-size:11px; padding:4px 8px;" onclick="restoreSnapshot(${snap.id})">↩️ 恢復</button>
+        `;
+        container.appendChild(div);
+      });
     }
 
     function renderTable(tableId, dataList, brandKey, pPremium, pStandard) {
@@ -665,7 +802,7 @@
         
         tr.className = "clickable-row" + (editable ? " editable-mode" : "");
         if (editable) {
-          tr.onclick = () => openModal(brandKey, item.id);
+          tr.onclick = () => openEditRowModal(brandKey, item.id);
         }
 
         tr.innerHTML = `
@@ -673,7 +810,7 @@
           <td class="promo">${item.promo}</td>
           <td class="price">$${res.priceStr}</td>
           <td class="pts-price">$${res.ptsPriceStr}</td>
-          <td class="disc">-$${res.discStr}</td>
+          <td class="disc">-$${res.ptsDiscStr}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -745,10 +882,6 @@
       ];
 
       updateTop3(allPromosWithPrices);
-    }
-
-    function openHistoryModal() {
-      alert("📜 歷史油價記錄功能（備用）");
     }
 
     async function fetchLatestOilPrice() {
